@@ -1,0 +1,81 @@
+﻿@page "/registroAdmin"
+
+<section id="hero" class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="wrapperdos">
+                    <div class="logo text-center mb-4">
+                        <img src="assets/img/logo.png" alt="" />
+                    </div>
+                    <EditForm Model="UsuarioParaRegistro" OnValidSubmit="RegistrarUsuario" class="p-3 mt-3">
+                        <DataAnnotationsValidator />
+                        <div class="row gx-4 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-field d-flex align-items-center">
+                                    <span class="far fa-user"></span>
+                                    <InputText id="userName" class="form-control" @bind-Value="UsuarioParaRegistro.NombreUsuario" placeholder="Nombre de Usuario" />
+                                    <ValidationMessage For="(() => UsuarioParaRegistro.NombreUsuario)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-field d-flex align-items-center">
+                                    <span class="far fa-user"></span>
+                                    <InputText id="Name" class="form-control" @bind-Value="UsuarioParaRegistro.Nombre" placeholder="Nombres" />
+                                    <ValidationMessage For="(() => UsuarioParaRegistro.Nombre)" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row gx-4 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-field d-flex align-items-center">
+                                    <span class="far fa-user"></span>
+                                    <InputText id="lastName" class="form-control" @bind-Value="UsuarioParaRegistro.Apellido" placeholder="Apellidos" />
+                                    <ValidationMessage For="(() => UsuarioParaRegistro.Apellido)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-field d-flex align-items-center">
+                                    <span class="far fa-user"></span>
+                                    <InputNumber id="phone" class="form-control" @bind-Value="UsuarioParaRegistro.NumeroCelular" placeholder="Nro de Celular" />
+                                    <ValidationMessage For="(() => UsuarioParaRegistro.NumeroCelular)" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row gx-4 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-field d-flex align-items-center">
+                                    <span class="far fa-user"></span>
+                                    <InputText id="address" class="form-control" @bind-Value="UsuarioParaRegistro.Direccion" placeholder="Dirección" />
+                                    <ValidationMessage For="(() => UsuarioParaRegistro.Direccion)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-field d-flex align-items-center">
+                                    <span class="fas fa-key"></span>
+                                    <InputText id="email" class="form-control" @bind-Value="UsuarioParaRegistro.Email" placeholder="E-mail" />
+                                    <ValidationMessage For="(() => UsuarioParaRegistro.Email)" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row gx-4 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-field d-flex align-items-center">
+                                    <span class="far fa-user"></span>
+                                    <InputText type="password" id="password" class="form-control" @bind-Value="UsuarioParaRegistro.Password" placeholder="Contraseña" />
+                                    <ValidationMessage For="(() => UsuarioParaRegistro.Password)" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn mt-3">Registrarse</button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@code {
+
+}

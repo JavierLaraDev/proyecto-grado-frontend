@@ -1,0 +1,297 @@
+﻿@page "/bicicleta-personalizada"
+@using Microsoft.AspNetCore.Components.Authorization
+@using Newtonsoft.Json
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@using PersonalizacionProyectoGradoWASM.Modelos
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@inject IJSRuntime JSRuntime
+@inject IAccesoriosServicio AccesoriosServicio
+@inject IPedidosServicio CarritoComprasServicio
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "1")]
+
+<PageTitle>Personaliza tu Bicicleta</PageTitle>
+<section id="personalizar">
+
+    <div class="grid-layout">
+
+        <!-- COLUMNA IZQUIERDA (Accesorios) -->
+        <div class="left-panel card">
+            <h2 class="title">Accesorios</h2>
+
+            @foreach (var tipoAccesorio in tiposAccesorios)
+            {
+                <div class="form-group">
+                    <label>@tipoAccesorio:</label>
+
+                    <select class="select-input"
+                            @onchange="@(e => CambiarAccesorio(tipoAccesorio, e.Value?.ToString()))">
+                        <option value="">Seleccione @tipoAccesorio</option>
+
+                        @if (accesoriosPorTipo.ContainsKey(tipoAccesorio))
+                        {
+                            @foreach (var accesorio in accesoriosPorTipo[tipoAccesorio])
+                            {
+                                <option value="@accesorio.Id">
+                                    @accesorio.Descripcion - Bs @accesorio.Precio.ToString("F2")
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+            }
+        </div>
+
+        <!-- COLUMNA CENTRAL (CANVAS 3D) -->
+        <div class="center-panel">
+            <div class="canvas-wrapper">
+                <canvas id="renderCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA (Color, precio y botón) -->
+        <div class="right-panel">
+
+            <div class="card small-card">
+                <p class="price-label">Color: </p>
+                <input type="color" class="input-color"
+                       @bind="colorBicicleta"
+                       @bind:event="oninput"
+                       @onchange="CambiarColorBicicleta" />
+            </div>
+
+            <div class="card small-card">
+                <p class="price-label">Precio Total</p>
+                <p class="price-value">Bs @precioTotal.ToString("F2")</p>
+            </div>
+
+            <button class="btn-main" @onclick="RealizarPedido">
+                Realizar Pedido
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+
+
+@code {
+    private string rutaModelo3D;
+    private List<string> tiposAccesorios = new List<string> { "Montura", "Bocina", "Canasta", "Espejos", "Mangos", "Timbre", "Asiento para Niño " };
+    private Dictionary<string, List<Accesorio>> accesoriosPorTipo = new Dictionary<string, List<Accesorio>>();
+    private Dictionary<string, Accesorio> accesoriosSeleccionados = new Dictionary<string, Accesorio>();
+    private double precioTotal = 0;
+    private Accesorio bicicletaBase;
+    private int userId;
+    private string colorBicicleta = "#000000";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerUsuarioId();
+        await CargarAccesorios();
+        await CargarModeloBicicleta();
+    }
+
+    private async Task ObtenerUsuarioId()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity.IsAuthenticated)
+            {
+                var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedUserId))
+                {
+                    userId = parsedUserId;
+                }
+                else
+                {
+                    Console.WriteLine("No se pudo obtener o parsear el ID del usuario.");
+                }
+            }
+            else
+            {
+                Console.WriteLine("El usuario no está autenticado.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener el ID del usuario: {ex.Message}");
+        }
+    }
+
+    private async Task CargarAccesorios()
+    {
+        try
+        {
+            var todosLosAccesorios = await AccesoriosServicio.GetAccesorios();
+
+            bicicletaBase = todosLosAccesorios.FirstOrDefault(a => a.Nombre == "Bicicleta");
+            if (bicicletaBase != null)
+            {
+                precioTotal += bicicletaBase.Precio;
+            }
+
+            foreach (var tipo in tiposAccesorios)
+            {
+                accesoriosPorTipo[tipo] = todosLosAccesorios.Where(a => a.Nombre == tipo).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al cargar accesorios: {ex.Message}");
+        }
+    }
+
+    private async Task CargarModeloBicicleta()
+    {
+        try
+        {
+            if (bicicletaBase != null && !string.IsNullOrEmpty(bicicletaBase.RutaImagen))
+            {
+                rutaModelo3D = bicicletaBase.RutaImagen;
+                await JSRuntime.InvokeVoidAsync("inicializarModeloBicicleta", rutaModelo3D);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "No se encontró el modelo 3D de la bicicleta.");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al cargar el modelo de la bicicleta: {ex.Message}");
+        }
+    }
+
+    private async Task CambiarAccesorio(string tipo, string accesorioId)
+    {
+        if (string.IsNullOrEmpty(accesorioId))
+        {
+            if (accesoriosSeleccionados.ContainsKey(tipo))
+            {
+                precioTotal -= accesoriosSeleccionados[tipo].Precio;
+                accesoriosSeleccionados.Remove(tipo);
+            }
+        }
+        else
+        {
+            var accesorio = accesoriosPorTipo[tipo].FirstOrDefault(a => a.Id.ToString() == accesorioId);
+            if (accesorio != null)
+            {
+                if (accesoriosSeleccionados.ContainsKey(tipo))
+                {
+                    precioTotal -= accesoriosSeleccionados[tipo].Precio;
+                }
+                accesoriosSeleccionados[tipo] = accesorio;
+                precioTotal += accesorio.Precio;
+            }
+        }
+
+        await ActualizarModeloBicicleta();
+    }
+
+    private async Task ActualizarModeloBicicleta()
+    {
+        var accesoriosParaJS = accesoriosSeleccionados.Select(kvp => new
+        {
+            tipo = kvp.Key,
+            id = kvp.Value.Id,
+            rutaImagen = kvp.Value.RutaImagen,
+            descripcion = kvp.Value.Descripcion
+        }).ToList();
+
+        await JSRuntime.InvokeVoidAsync("actualizarModeloBicicleta", accesoriosParaJS);
+    }
+    private async Task CambiarColorBicicleta()
+    {
+        await JSRuntime.InvokeVoidAsync("cambiarColorBicicleta", colorBicicleta);
+    }
+    private async Task RealizarPedido()
+    {
+        try
+        {
+            if (userId == 0)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error: No se pudo obtener el ID del usuario.");
+                return;
+            }
+
+            var pedido = new PedidosComprasDto
+                {
+                    UsuarioId = userId,
+                    PrecioTotal = precioTotal,
+                    FechaCreacion = DateTime.Now,
+                    Estado = EstadoPedido.Pendiente,
+                    Items = new List<PedidosItemsDto>(),
+                    ColorBicicleta = colorBicicleta
+                };
+
+            if (bicicletaBase == null)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Error: No se ha seleccionado una bicicleta base.");
+                return;
+            }
+
+            pedido.Items.Add(new PedidosItemsDto
+                {
+                    AccesorioId = bicicletaBase.Id,
+                    Cantidad = 1
+                });
+
+            foreach (var accesorio in accesoriosSeleccionados.Values)
+            {
+                pedido.Items.Add(new PedidosItemsDto
+                    {
+                        AccesorioId = accesorio.Id,
+                        Cantidad = 1
+                    });
+            }
+
+            Console.WriteLine($"Enviando pedido: {JsonConvert.SerializeObject(pedido)}");
+            var result = await CarritoComprasServicio.AgregarPedido(pedido);
+
+            if (result != null)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Bicicleta personalizada agregada al carrito con éxito!");
+                NavigationManager.NavigateTo("/MonitoreoPedidos");
+            }
+            else
+            {
+                throw new Exception("El resultado del pedido es nulo");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al agregar al carrito: {ex.Message}");
+            Console.WriteLine($"Error detallado al realizar pedido: {ex}");
+        }
+    }
+    private string ConvertirAHexadecimal(string color)
+    {
+        // Si ya es hexadecimal, asegúrate de que tenga el formato correcto
+        if (color.StartsWith("#"))
+        {
+            return color.Length == 7 ? color : throw new ArgumentException("Formato de color hexadecimal inválido");
+        }
+
+        // Si es RGB, conviértelo a hexadecimal
+        var rgbValues = color.Split(',');
+        if (rgbValues.Length == 3 &&
+            int.TryParse(rgbValues[0], out int r) &&
+            int.TryParse(rgbValues[1], out int g) &&
+            int.TryParse(rgbValues[2], out int b))
+        {
+            return $"#{r:X2}{g:X2}{b:X2}";
+        }
+
+        throw new ArgumentException("Formato de color inválido");
+    }
+}

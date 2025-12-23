@@ -1,0 +1,132 @@
+﻿@page "/crear-accesorio"
+@using Microsoft.AspNetCore.Authorization
+@using PersonalizacionProyectoGradoWASM.Helpers
+@using PersonalizacionProyectoGradoWASM.Modelos
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@using System.Net.Http.Headers
+@inject IAccesoriosServicio accesoriosServicio
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "0")]
+
+<section id="crearAccesorios" class="crear-accesorio-container">
+    <div class="card-accesorio">
+        <div class="card-header-accesorio">
+            <h4>Nuevo Accesorio</h4>
+        </div>
+        <div class="card-body-accesorio">
+            <EditForm Model="CrearAccesorio" OnValidSubmit="@( () => ManejadorOnCrearPost())">
+                <DataAnnotationsValidator></DataAnnotationsValidator>
+                <ValidationSummary></ValidationSummary>
+
+                <div class="form-group-accesorio">
+                    <label for="nombre">Nombre:</label>
+                    <InputSelect @bind-Value="CrearAccesorio.Nombre" class="form-control-accesorio" id="nombre">
+                        <option value="">Seleccione un nombre</option>
+                        @foreach (var nombre in listaDeNombres)
+                        {
+                            <option value="@nombre">@nombre</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => CrearAccesorio.Nombre"></ValidationMessage>
+                </div>
+
+                <div class="form-group-accesorio">
+                    <label for="costo">Costo:</label>
+                    <InputNumber @bind-Value="CrearAccesorio.Costo" class="form-control-accesorio" id="costo"></InputNumber>
+                    <ValidationMessage For="() => CrearAccesorio.Costo"></ValidationMessage>
+                </div>
+
+                <div class="form-group-accesorio">
+                    <label for="precio">Precio:</label>
+                    <InputNumber @bind-Value="CrearAccesorio.Precio" class="form-control-accesorio" id="precio"></InputNumber>
+                    <ValidationMessage For="() => CrearAccesorio.Precio"></ValidationMessage>
+                </div>
+
+                <div class="form-group-accesorio">
+                    <label>Modelo 3D del Accesorio</label>
+                    <InputFile OnChange="@ManejadorOnSubidaArchivo" accept=".glb" class="form-control-accesorio"></InputFile>
+                    @if (!string.IsNullOrEmpty(Modelo3d))
+                    {
+                        <div class="modelo3d-preview">
+                            <p>Modelo 3D cargado: @Modelo3d</p>
+                            <button type="button" @onclick="MostrarVistaPrevia3D" class="btn btn-secondary">Vista previa 3D</button>
+                        </div>
+                    }
+                </div>
+
+                <div class="form-group-accesorio">
+                    <label for="descripcion">Descripción</label>
+                    <InputText @bind-Value="CrearAccesorio.Descripcion" class="form-control-accesorio" id="descripcion"></InputText>
+                    <ValidationMessage For="() => CrearAccesorio.Descripcion"></ValidationMessage>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success-accesorio"><i class="bi bi-gear-fill"></i> Guardar Accesorio</button>
+                    <NavLink href="accesorios" class="btn btn-secondary-accesorio"><i class="bi bi-arrow-left-circle-fill"></i> Volver atrás</NavLink>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</section>
+<!-- Modal para mostrar el modelo 3D -->
+<div class="modal fade" id="modelo3DModal" tabindex="-1" role="dialog" aria-labelledby="modelo3DModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modelo3DModalLabel">Vista previa del Modelo 3D</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <canvas id="renderCanvas" style="width: 100%; height: 400px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private Accesorio CrearAccesorio { get; set; } = new Accesorio();
+    public string Modelo3d { get; set; }
+    public List<string> listaDeNombres { get; set; } = new List<string> { "Bicicleta", "Montura", "Bocina", "Canasta", "Espejos", "Mangos", "Timbre", "Asiento para Niño " };
+
+    private async Task ManejadorOnCrearPost()
+    {
+        CrearAccesorio.RutaImagen = Modelo3d;
+        var crearAccesorio = await accesoriosServicio.CrearAccesorio(CrearAccesorio);
+        await JSRuntime.InvokeVoidAsync("ShowToastr", "success", "Accesorio creado correctamente");
+        navigationManager.NavigateTo("accesorios");
+    }
+
+
+    private async Task ManejadorOnSubidaArchivo(InputFileChangeEventArgs e)
+    {
+        var modeloFile = e.File;
+
+        if (modeloFile == null || Path.GetExtension(modeloFile.Name).ToLower() != ".glb")
+        {
+            await JSRuntime.InvokeVoidAsync("ShowToastr", "error", "Seleccione un archivo .glb");
+            return;
+        }
+
+        using var ms = new MemoryStream();
+        await modeloFile.OpenReadStream(50 * 1024 * 1024).CopyToAsync(ms); // ⭐ 50MB
+        ms.Seek(0, SeekOrigin.Begin);
+
+        var content = new MultipartFormDataContent();
+        content.Add(new StreamContent(ms), "file", modeloFile.Name);
+
+        Modelo3d = await accesoriosServicio.SubidaImagen(content);
+
+        await JSRuntime.InvokeVoidAsync("ShowToastr", "success", "Modelo 3D subido correctamente");
+    }
+
+
+
+
+    private async Task MostrarVistaPrevia3D()
+    {
+        await JSRuntime.InvokeVoidAsync("mostrarModelo3D", Modelo3d);
+    }
+
+}

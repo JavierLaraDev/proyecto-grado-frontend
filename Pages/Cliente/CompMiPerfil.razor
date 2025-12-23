@@ -1,0 +1,182 @@
+﻿@page "/miPerfil"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using PersonalizacionProyectoGradoWASM.Helpers
+@using PersonalizacionProyectoGradoWASM.Servicios
+@using PersonalizacionProyectoGradoWASM.Modelos
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@inject IUsuariosServicio UsuariosServicio
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "1")]
+
+<section id="profileSection">
+    <div class="profile-container">
+        <h2 class="profile-title">Mi Perfil</h2>
+        @if (usuario == null)
+        {
+            <p>Cargando...</p>
+        }
+        else
+        {
+            <button class="profile-edit-btn" @onclick="ToggleEditing">
+                <i class="fas fa-@(isEditing ? "times" : "edit")"></i> @(isEditing ? "Cancelar" : "Editar")
+            </button>
+            <EditForm Model="@usuario" OnValidSubmit="ActualizarPerfil">
+                <DataAnnotationsValidator />
+                <div class="profile-form-group">
+                    <label class="profile-label" for="nombreUsuario">
+                        <i class="fas fa-user"></i> Nombre de Usuario:
+                    </label>
+                    <InputText id="nombreUsuario" class="profile-input" @bind-Value="usuario.NombreUsuario" disabled="true" />
+                </div>
+                <div class="profile-form-group">
+                    <label class="profile-label" for="nombre">
+                        <i class="fas fa-id-card"></i> Nombre:
+                    </label>
+                    <InputText id="nombre" class="profile-input" @bind-Value="usuario.Nombre" disabled="@(!isEditing)" />
+                    <ValidationMessage For="@(() => usuario.Nombre)" />
+                </div>
+                <div class="profile-form-group">
+                    <label class="profile-label" for="apellido">
+                        <i class="fas fa-id-card"></i> Apellido:
+                    </label>
+                    <InputText id="apellido" class="profile-input" @bind-Value="usuario.Apellido" disabled="@(!isEditing)" />
+                    <ValidationMessage For="@(() => usuario.Apellido)" />
+                </div>
+                <div class="profile-form-group">
+                    <label class="profile-label" for="email">
+                        <i class="fas fa-envelope"></i> Email:
+                    </label>
+                    <InputText id="email" class="profile-input" @bind-Value="usuario.Email" disabled="@(!isEditing)" />
+                </div>
+                <div class="profile-form-group">
+                    <label class="profile-label" for="numeroCelular">
+                        <i class="fas fa-phone"></i> Número de Celular:
+                    </label>
+                    <InputNumber id="numeroCelular" class="profile-input" @bind-Value="usuario.NumeroCelular" disabled="@(!isEditing)" />
+                    <ValidationMessage For="@(() => usuario.NumeroCelular)" />
+                </div>
+                <div class="profile-form-group">
+                    <label class="profile-label" for="direccion">
+                        <i class="fas fa-map-marker-alt"></i> Dirección:
+                    </label>
+                    <InputText id="direccion" class="profile-input" @bind-Value="usuario.Direccion" disabled="@(!isEditing)" />
+                    <ValidationMessage For="@(() => usuario.Direccion)" />
+                </div>
+                @if (isEditing)
+                {
+                    <div class="profile-form-group">
+                        <label class="profile-label" for="password">
+                            <i class="fas fa-lock"></i> Contraseña:
+                        </label>
+                        @if (isChangingPassword)
+                        {
+                            <InputText id="password" type="password" class="profile-input" @bind-Value="newPassword" />
+                        }
+                        else
+                        {
+                            <a href="javascript:void(0);" @onclick="EnablePasswordChange" class="change-password-link">Cambiar contraseña</a>
+                        }
+                    </div>
+                    <button type="submit" class="profile-submit-btn">
+                        <i class="fas fa-save"></i> Actualizar Perfil
+                    </button>
+                }
+            </EditForm>
+        }
+    </div>
+</section>
+@code {
+    private UsuarioGestion usuario;
+    private bool isEditing = false;
+    private bool isChangingPassword = false;
+    private string newPassword = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfile();
+    }
+
+    private async Task LoadUserProfile()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId) && int.TryParse(userId, out int id))
+            {
+                try
+                {
+                    usuario = await UsuariosServicio.GetUsuario(id);
+                    Console.WriteLine($"Usuario cargado: {System.Text.Json.JsonSerializer.Serialize(usuario)}");
+                }
+                catch (Exception ex)
+                {
+                    await JSRuntime.ToastrError($"Error al cargar el perfil: {ex.Message}");
+                }
+            }
+        }
+    }
+
+    private void ToggleEditing()
+    {
+        isEditing = !isEditing;
+        if (!isEditing)
+        {
+            // Reset changes if editing is cancelled
+            LoadUserProfile();
+            isChangingPassword = false;
+            newPassword = string.Empty;
+        }
+    }
+
+    private void EnablePasswordChange()
+    {
+        isChangingPassword = true;
+    }
+
+    private async Task ActualizarPerfil()
+    {
+        if (!isEditing)
+        {
+            await JSRuntime.ToastrError("No se pueden guardar cambios cuando no estás en modo de edición.");
+            return;
+        }
+
+        try
+        {
+            if (isChangingPassword && !string.IsNullOrWhiteSpace(newPassword))
+            {
+                usuario.Password = newPassword;
+            }
+            else
+            {
+                usuario.Password = null; // No actualizar la contraseña si no se cambió
+            }
+
+            var updatedUser = await UsuariosServicio.ActualizarUsuario(usuario.Id, usuario);
+            if (updatedUser != null)
+            {
+                usuario = updatedUser;
+                await JSRuntime.ToastrSuccess("Perfil actualizado exitosamente");
+                isEditing = false;
+                isChangingPassword = false;
+                newPassword = string.Empty;
+            }
+            else
+            {
+                await JSRuntime.ToastrError("No se pudo actualizar el perfil. La respuesta del servidor fue nula.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al actualizar el perfil: {ex.Message}");
+            await JSRuntime.ToastrError($"Error al actualizar el perfil: {ex.Message}");
+        }
+    }
+}

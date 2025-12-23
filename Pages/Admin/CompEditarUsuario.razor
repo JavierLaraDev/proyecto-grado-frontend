@@ -1,0 +1,139 @@
+﻿@page "/editar-usuario/{Id:int}"
+@using PersonalizacionProyectoGradoWASM.Helpers
+@using PersonalizacionProyectoGradoWASM.Modelos
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@inject IUsuariosServicio usuarioServicio
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<section class="editar-usuario-section">
+    <div class="editar-usuario-card">
+
+        <div class="editar-usuario-header">
+            <h2>Editar Usuario</h2>
+        </div>
+
+        <div class="editar-usuario-body">
+
+            @if (usuario == null)
+            {
+                <p class="text-center">Cargando...</p>
+            }
+            else
+            {
+                <EditForm Model="@usuario" OnValidSubmit="GuardarCambios">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <InputText @bind-Value="usuario.Nombre" class="form-control" />
+                            <ValidationMessage For="@(() => usuario.Nombre)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Apellido</label>
+                            <InputText @bind-Value="usuario.Apellido" class="form-control" />
+                            <ValidationMessage For="@(() => usuario.Apellido)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Número de celular</label>
+                            <InputNumber @bind-Value="usuario.NumeroCelular" class="form-control" />
+                            <ValidationMessage For="@(() => usuario.NumeroCelular)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <InputText @bind-Value="usuario.Direccion" class="form-control" />
+                            <ValidationMessage For="@(() => usuario.Direccion)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <InputText @bind-Value="usuario.Email" class="form-control" />
+                            <ValidationMessage For="@(() => usuario.Email)" />
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Contraseña</label>
+
+                            @if (cambiarContrasena)
+                            {
+                                <InputText @bind-Value="nuevaContrasena"
+                                           type="password"
+                                           class="form-control"
+                                           placeholder="Nueva contraseña" />
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="link-btn"
+                                        @onclick="HabilitarCambioContrasena">
+                                    Cambiar contraseña
+                                </button>
+                            }
+                        </div>
+
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            Guardar Cambios
+                        </button>
+
+                        <button type="button"
+                                class="btn-secondary"
+                                @onclick="Cancelar">
+                            Cancelar
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+
+    </div>
+</section>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private UsuarioGestion usuario;
+    private bool cambiarContrasena = false;
+    private string nuevaContrasena = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        usuario = await usuarioServicio.GetUsuario(Id);
+    }
+
+    private void HabilitarCambioContrasena()
+    {
+        cambiarContrasena = true;
+    }
+
+    private async Task GuardarCambios()
+    {
+        try
+        {
+            usuario.Password = cambiarContrasena && !string.IsNullOrWhiteSpace(nuevaContrasena)
+                ? nuevaContrasena
+                : null;
+
+            await usuarioServicio.ActualizarUsuario(Id, usuario);
+            await JsRuntime.ToastrSuccess("Usuario actualizado correctamente");
+            NavigationManager.NavigateTo("/usuarios");
+        }
+        catch (Exception ex)
+        {
+            await JsRuntime.ToastrSuccess($"Error: {ex.Message}");
+        }
+    }
+
+    private void Cancelar()
+    {
+        NavigationManager.NavigateTo("/usuarios");
+    }
+}

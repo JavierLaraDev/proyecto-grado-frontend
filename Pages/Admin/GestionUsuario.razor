@@ -1,0 +1,169 @@
+﻿@page "/usuarios"
+@using Microsoft.AspNetCore.Authorization
+@using PersonalizacionProyectoGradoWASM.Helpers
+@using PersonalizacionProyectoGradoWASM.Servicios
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@using PersonalizacionProyectoGradoWASM.Modelos
+@inject IUsuariosServicio usuarioServicio
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "0")]
+
+<section class="users-page">
+
+    <!-- Header -->
+    <div class="users-header">
+        <h1>Gestión de Usuarios</h1>
+        <button class="users-btn-primary" @onclick="NuevoUsuario">
+            + Nuevo Administrador
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="users-filters">
+        <input type="text"
+               class="users-input"
+               placeholder="Buscar usuario, nombre o apellido"
+               @bind="filtroNombre"
+               @bind:event="oninput"
+               @onkeyup="FiltrarUsuarios" />
+
+        <select class="users-select"
+                @bind="filtroRol"
+                @bind:after="FiltrarUsuarios">
+            <option value="">Todos los roles</option>
+            <option value="@RolEnum.Administrador">Administradores</option>
+            <option value="@RolEnum.cliente">Clientes</option>
+        </select>
+    </div>
+
+    @if (estaCargando)
+    {
+        <div class="users-state">Cargando usuarios...</div>
+    }
+    else if (!string.IsNullOrEmpty(error))
+    {
+        <div class="users-error">@error</div>
+    }
+    else
+    {
+        <div class="users-table-wrapper">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Apellidos</th>
+                        <th>Celular</th>
+                        <th>Email</th>
+                        <th class="col-actions">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usuario in usuariosFiltrados)
+                    {
+                        <tr>
+                            <td>@usuario.Id</td>
+                            <td>@usuario.NombreUsuario</td>
+                            <td>@usuario.Nombre</td>
+                            <td>@usuario.Apellido</td>
+                            <td>@usuario.NumeroCelular</td>
+                            <td>@usuario.Email</td>
+                            <td class="col-actions">
+                                <button class="users-btn-edit"
+                                        @onclick="() => IniciarEdicion(usuario.Id)">
+                                    Editar
+                                </button>
+                                <button class="users-btn-delete"
+                                        @onclick="() => ManejadorOnBorrar(usuario.Id)">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+
+@code {
+    private List<UsuarioGestion> usuarios = new List<UsuarioGestion>();
+    private List<UsuarioGestion> usuariosFiltrados = new List<UsuarioGestion>();
+    private bool estaCargando = true;
+    private string error;
+    private string filtroNombre = "";
+    private RolEnum? filtroRol = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarUsuarios();
+    }
+
+    private async Task CargarUsuarios()
+    {
+        estaCargando = true;
+        error = null;
+        try
+        {
+            usuarios = (await usuarioServicio.GetUsuarios()).ToList();
+            FiltrarUsuarios();
+        }
+        catch (Exception ex)
+        {
+            error = $"Error al cargar usuarios: {ex.Message}";
+        }
+        finally
+        {
+            estaCargando = false;
+        }
+    }
+
+    private void FiltrarUsuarios()
+    {
+        usuariosFiltrados = usuarios
+            .Where(u => string.IsNullOrEmpty(filtroNombre) ||
+                        u.NombreUsuario.Contains(filtroNombre, StringComparison.OrdinalIgnoreCase) ||
+                        u.Nombre.Contains(filtroNombre, StringComparison.OrdinalIgnoreCase) ||
+                        u.Apellido.Contains(filtroNombre, StringComparison.OrdinalIgnoreCase))
+            .Where(u => !filtroRol.HasValue || u.Rol == filtroRol.Value)
+            .ToList();
+    }
+
+    private async Task ManejadorOnBorrar(int userId)
+    {
+        bool confirmado = await JsRuntime.InvokeAsync<bool>("confirm", "¿Está seguro que desea eliminar este usuario?");
+        if (confirmado)
+        {
+            try
+            {
+                bool resultado = await usuarioServicio.EliminarUsuario(userId);
+                if (resultado)
+                {
+                    await JsRuntime.InvokeVoidAsync("alert", "Usuario eliminado correctamente");
+                    await CargarUsuarios();
+                }
+                else
+                {
+                    await JsRuntime.InvokeVoidAsync("alert", "No se pudo eliminar el usuario");
+                }
+            }
+            catch (Exception ex)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", $"Error al eliminar usuario: {ex.Message}");
+            }
+        }
+    }
+
+    private void IniciarEdicion(int userId)
+    {
+        NavigationManager.NavigateTo($"/editar-usuario/{userId}");
+    }
+
+    private void NuevoUsuario()
+    {
+        NavigationManager.NavigateTo("/registroAdmin");
+    }
+}

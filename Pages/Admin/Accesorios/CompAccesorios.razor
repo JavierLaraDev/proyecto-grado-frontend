@@ -1,0 +1,159 @@
+﻿@page "/accesorios"
+@using Microsoft.AspNetCore.Authorization
+@using PersonalizacionProyectoGradoWASM.Servicios
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@using PersonalizacionProyectoGradoWASM.Modelos
+@inject IAccesoriosServicio accesoriosServicio
+@inject IJSRuntime JsRuntime
+@inject NavigationManager NavigationManager
+@attribute [Authorize(Roles = "0")]
+
+<section class="acc-page">
+
+    <div class="acc-header">
+        <h1>Accesorios</h1>
+        <button class="acc-btn-primary" @onclick="NuevoAccesorio">
+            + Nuevo Accesorio
+        </button>
+    </div>
+
+    <div class="acc-table-wrapper">
+        <table class="acc-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Costo</th>
+                    <th>Precio</th>
+                    <th>Modelo 3D</th>
+                    <th>Descripción</th>
+                    <th>Creado</th>
+                    <th>Actualizado</th>
+                    <th class="acc-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Accesorios.Any())
+                {
+                    @foreach (var a in Accesorios)
+                    {
+                        <tr>
+                            <td>@a.Id</td>
+                            <td>@a.Nombre</td>
+                            <td>@a.Costo</td>
+                            <td>@a.Precio</td>
+                            <td>
+                                <button class="acc-btn-secondary"
+                                        @onclick="() => MostrarModelo3D(a.RutaImagen)">
+                                    Ver
+                                </button>
+                            </td>
+                            <td class="acc-ellipsis">@a.Descripcion</td>
+                            <td>@a.FechaCreacion.ToShortDateString()</td>
+                            <td>@a.FechaActualizacion.ToShortDateString()</td>
+                            <td class="acc-actions">
+                                <button class="acc-btn-edit"
+                                        @onclick="() => IniciarEdicion(a.Id)">
+                                    Editar
+                                </button>
+                                <button class="acc-btn-delete"
+                                        @onclick="() => ManejadorOnBorrar(a.Id)">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9">Cargando accesorios...</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <ConfirmacionBorrado ProcesandoComponentePadre="estaProcesando"
+                         CambioConfirmacion="Click_Confirmacion_Borrado" />
+</section>
+
+<div class="modal fade" id="modelo3DModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-3d-dialog">
+        <div class="modal-content modal-3d-content">
+
+            <div class="modal-header modal-3d-header">
+                <h5 class="modal-title">Vista previa</h5>
+                <button type="button"
+                        class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body modal-3d-body">
+                <canvas id="renderCanvas"></canvas>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    public IEnumerable<Accesorio> Accesorios { get; set; } = new List<Accesorio>();
+
+    private bool estaProcesando = false;
+    private int? BorrarIdAccesorio = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Accesorios = await accesoriosServicio.GetAccesorios();
+    }
+
+    private async Task MostrarModelo3D(string rutaModelo3D)
+    {
+        await JsRuntime.InvokeVoidAsync("mostrarModelo3D", rutaModelo3D);
+    }
+
+    private async Task ManejadorOnBorrar(int accesorioId)
+    {
+        BorrarIdAccesorio = accesorioId;
+        await JsRuntime.InvokeVoidAsync("MostrarModalConfirmacionBorrado");
+    }
+
+    private async Task Click_Confirmacion_Borrado(bool confirmado)
+    {
+        if (confirmado && BorrarIdAccesorio.HasValue)
+        {
+            estaProcesando = true;
+
+            try
+            {
+                await accesoriosServicio.EliminarAccesorio(BorrarIdAccesorio.Value);
+                await JsRuntime.InvokeVoidAsync("ShowToastr", "success", "Accesorio eliminado correctamente");
+                Accesorios = await accesoriosServicio.GetAccesorios();
+            }
+            catch
+            {
+                await JsRuntime.InvokeVoidAsync("ShowToastr", "error", "Error al eliminar el accesorio");
+            }
+            finally
+            {
+                estaProcesando = false;
+                BorrarIdAccesorio = null;
+            }
+        }
+    }
+
+    private void NuevoAccesorio()
+    {
+        NavigationManager.NavigateTo("crear-accesorio");
+    }
+
+    private void IniciarEdicion(int accesorioId)
+    {
+        NavigationManager.NavigateTo($"editar-accesorio/{accesorioId}");
+    }
+}

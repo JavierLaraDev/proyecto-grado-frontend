@@ -1,0 +1,150 @@
+﻿@page "/MonitoreoPedidos"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using PersonalizacionProyectoGradoWASM.Modelos
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@using System.Security.Claims
+@inject IPedidosServicio PedidosServicio
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@attribute [Authorize(Roles = "1")]
+
+<section id="Pedidos">
+    <div class="monitoreo-pedidos-container">
+        <h2 class="pedidos-title">Mis Pedidos</h2>
+        @if (pedidos != null && pedidos.Any())
+        {
+            @foreach (var pedido in pedidos.OrderByDescending(p => p.Id))
+            {
+                <div class="pedido-card">
+                    <div class="pedido-header">
+                        Pedido #@pedido.Id
+                    </div>
+                    <div class="pedido-body">
+                        <h5 class="pedido-section-title">Accesorios seleccionados:</h5>
+                        @if (pedido.Items != null && pedido.Items.Any())
+                        {
+                            <ul class="pedido-list">
+                                @foreach (var item in pedido.Items)
+                                {
+                                    <li class="pedido-list-item">@item.Accesorio.Descripcion - Cantidad: @item.Cantidad - Precio: $@(item.Accesorio.Precio * item.Cantidad)</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>No se encontraron detalles para este pedido.</p>
+                        }
+
+                        <p class="pedido-total">Precio Total: $@pedido.PrecioTotal.ToString("F2")</p>
+                        <p class="pedido-estado">Estado del Pedido: @pedido.Estado.ToString()</p>
+
+                        @if (pedido.Estado != EstadoPedido.Cancelado && pedido.Estado != EstadoPedido.Entregado)
+                        {
+                            <button class="btn-cancelar" @onclick="() => CancelarPedido(pedido.Id)">Cancelar Pedido</button>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-pedidos">No se encontraron pedidos. Si crees que esto es un error, por favor, actualiza la página o contacta con soporte.</p>
+        }
+    </div>
+</section>
+@code {
+    private List<PedidosComprasDto> pedidos;
+    private int userId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObtenerUsuarioId();
+        await CargarPedidos();
+    }
+
+    private async Task ObtenerUsuarioId()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedUserId))
+            {
+                userId = parsedUserId;
+                Console.WriteLine($"Usuario autenticado. ID: {userId}");
+            }
+            else
+            {
+                Console.WriteLine("No se pudo obtener el ID del usuario del claim.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Usuario no autenticado.");
+        }
+    }
+
+    private async Task CargarPedidos()
+    {
+        try
+        {
+            Console.WriteLine($"Intentando cargar pedidos para el usuario con ID: {userId}");
+            pedidos = await PedidosServicio.GetPedidosUsuario(userId);
+
+            if (pedidos == null || !pedidos.Any())
+            {
+                Console.WriteLine($"No se encontraron pedidos para el usuario con ID: {userId}");
+            }
+            else
+            {
+                Console.WriteLine($"Se cargaron {pedidos.Count} pedidos para el usuario con ID: {userId}");
+                foreach (var pedido in pedidos)
+                {
+                    Console.WriteLine($"Pedido ID: {pedido.Id}, Items: {pedido.Items?.Count ?? 0}, Estado: {pedido.Estado}, Precio Total: {pedido.PrecioTotal}");
+                    if (pedido.Items != null)
+                    {
+                        foreach (var item in pedido.Items)
+                        {
+                            Console.WriteLine($"  - Item: AccesorioId: {item.AccesorioId}, Cantidad: {item.Cantidad}");
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar los pedidos: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al cargar los pedidos: {ex.Message}");
+        }
+    }
+
+    private async Task CancelarPedido(int pedidoId)
+    {
+        try
+        {
+            Console.WriteLine($"Intentando cancelar el pedido con ID: {pedidoId}");
+            var resultado = await PedidosServicio.ActualizarEstadoPedido(pedidoId, EstadoPedido.Cancelado);
+            Console.WriteLine($"Resultado de la actualización: {resultado}");
+
+            if (resultado)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Pedido cancelado con éxito.");
+                await CargarPedidos(); // Recargamos los pedidos para reflejar los cambios
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "No se pudo cancelar el pedido. Por favor, inténtalo de nuevo.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cancelar el pedido: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al cancelar el pedido: {ex.Message}");
+        }
+    }
+}

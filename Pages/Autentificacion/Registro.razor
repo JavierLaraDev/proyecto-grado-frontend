@@ -1,0 +1,108 @@
+﻿@page "/registro"
+
+<div class="register-wrapper">
+
+    <div class="register-card">
+
+        <!-- Header -->
+        <div class="register-header">
+            <img src="assets/img/logo.png" alt="Briz" class="register-logo" />
+            <h1>Registro de cliente</h1>
+            <p>Complete los datos para crear su cuenta</p>
+        </div>
+
+        <EditForm Model="UsuarioParaRegistro"
+                  OnValidSubmit="RegistrarUsuario">
+
+            <DataAnnotationsValidator />
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <InputText class="form-control"
+                               @bind-Value="UsuarioParaRegistro.NombreUsuario"
+                               placeholder="Nombre de usuario" />
+                    <ValidationMessage For="(() => UsuarioParaRegistro.NombreUsuario)"
+                                       class="validation-message" />
+                </div>
+
+                <div class="form-group">
+                    <label>Nombres</label>
+                    <InputText class="form-control"
+                               @bind-Value="UsuarioParaRegistro.Nombre"
+                               placeholder="Nombres" />
+                    <ValidationMessage For="(() => UsuarioParaRegistro.Nombre)"
+                                       class="validation-message" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Apellidos</label>
+                    <InputText class="form-control"
+                               @bind-Value="UsuarioParaRegistro.Apellido"
+                               placeholder="Apellidos" />
+                    <ValidationMessage For="(() => UsuarioParaRegistro.Apellido)"
+                                       class="validation-message" />
+                </div>
+
+                <div class="form-group">
+                    <label>Celular</label>
+                    <InputNumber class="form-control"
+                                 @bind-Value="UsuarioParaRegistro.NumeroCelular"
+                                 placeholder="Número de celular" />
+                    <ValidationMessage For="(() => UsuarioParaRegistro.NumeroCelular)"
+                                       class="validation-message" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <InputText class="form-control"
+                               @bind-Value="UsuarioParaRegistro.Direccion"
+                               placeholder="Dirección" />
+                    <ValidationMessage For="(() => UsuarioParaRegistro.Direccion)"
+                                       class="validation-message" />
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <InputText class="form-control"
+                               @bind-Value="UsuarioParaRegistro.Email"
+                               placeholder="Correo electrónico" />
+                    <ValidationMessage For="(() => UsuarioParaRegistro.Email)"
+                                       class="validation-message" />
+                </div>
+            </div>
+
+            <div class="form-row single">
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <InputText type="password"
+                               class="form-control"
+                               @bind-Value="UsuarioParaRegistro.Password"
+                               placeholder="Contraseña" />
+                    <ValidationMessage For="(() => UsuarioParaRegistro.Password)"
+                                       class="validation-message" />
+                </div>
+            </div>
+
+            <button type="submit" class="register-btn">
+                Registrarse
+            </button>
+
+        </EditForm>
+
+        <div class="register-footer">
+            ¿Ya tiene cuenta?
+            <a href="Acceder">Iniciar sesión</a>
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+    // Lógica existente
+}

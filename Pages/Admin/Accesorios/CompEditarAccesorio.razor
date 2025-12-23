@@ -1,0 +1,191 @@
+﻿@page "/editar-accesorio/{Id:int}"
+@using Microsoft.AspNetCore.Authorization
+@using PersonalizacionProyectoGradoWASM.Helpers
+@using PersonalizacionProyectoGradoWASM.Modelos
+@using PersonalizacionProyectoGradoWASM.Servicios.IServicios
+@using System.Net.Http.Headers
+@inject IAccesoriosServicio accesoriosServicio
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "0")]
+
+<section class="editar-accesorio-section">
+
+    <div class="editar-accesorio-card">
+
+        <!-- HEADER -->
+        <div class="editar-accesorio-header">
+            <h2>Editar Accesorio</h2>
+        </div>
+
+        <!-- BODY -->
+        <div class="editar-accesorio-body">
+
+            @if (EditarAccesorio == null)
+            {
+                <p class="text-center">Cargando...</p>
+            }
+            else
+            {
+                <EditForm Model="EditarAccesorio" OnValidSubmit="ManejadorOnEditarAccesorio">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-grid">
+
+                        <!-- Nombre -->
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <InputSelect @bind-Value="EditarAccesorio.Nombre" class="form-control">
+                                <option value="">Seleccione un nombre</option>
+                                @foreach (var nombre in listaDeNombres)
+                                {
+                                    <option value="@nombre">@nombre</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="() => EditarAccesorio.Nombre" class="validation-message" />
+                        </div>
+
+                        <!-- Costo -->
+                        <div class="form-group">
+                            <label>Costo</label>
+                            <InputNumber @bind-Value="EditarAccesorio.Costo" class="form-control" />
+                            <ValidationMessage For="() => EditarAccesorio.Costo" class="validation-message" />
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="form-group">
+                            <label>Precio</label>
+                            <InputNumber @bind-Value="EditarAccesorio.Precio" class="form-control" />
+                            <ValidationMessage For="() => EditarAccesorio.Precio" class="validation-message" />
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="form-group full-width">
+                            <label>Descripción</label>
+                            <InputText @bind-Value="EditarAccesorio.Descripcion" class="form-control" />
+                            <ValidationMessage For="() => EditarAccesorio.Descripcion" class="validation-message" />
+                        </div>
+
+                        <!-- MODELO 3D -->
+                        <div class="form-group full-width modelo-3d-box">
+                            <label>Modelo 3D</label>
+
+                            @if (!string.IsNullOrEmpty(EditarAccesorio.RutaImagen))
+                            {
+                                <div class="modelo-3d-info">
+                                    <code>@EditarAccesorio.RutaImagen</code>
+                                    <div class="modelo-3d-actions">
+                                        <button type="button" class="btn-secondary" @onclick="MostrarVistaPrevia3D">
+                                            Vista previa 3D
+                                        </button>
+                                        <button type="button" class="btn-danger" @onclick="EliminarModelo3D">
+                                            Eliminar modelo
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+
+                            <InputFile OnChange="ManejadorOnSubidaArchivo" accept=".glb" />
+                        </div>
+
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            Guardar Cambios
+                        </button>
+
+                        <NavLink href="accesorios" class="btn-secondary">
+                            Cancelar
+                        </NavLink>
+                    </div>
+
+                </EditForm>
+            }
+
+        </div>
+    </div>
+
+</section>
+
+
+<!-- Modal Vista Previa -->
+<div class="modal fade" id="modelo3DModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Vista previa del Modelo 3D</h5>
+            </div>
+            <div class="modal-body">
+                <canvas id="renderCanvas" style="width:100%;height:400px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private Accesorio EditarAccesorio { get; set; } = new Accesorio();
+
+    public List<string> listaDeNombres { get; set; } =
+        new() { "Bicicleta", "Montura", "Bocina", "Canasta", "Espejos", "Mangos", "Timbre", "Asiento para Niño " };
+
+    protected override async Task OnInitializedAsync()
+    {
+        EditarAccesorio = await accesoriosServicio.GetAccesorio(Id);
+    }
+
+    private async Task ManejadorOnEditarAccesorio()
+    {
+        try
+        {
+            await accesoriosServicio.ActualizarAccesorio(Id, EditarAccesorio);
+            await JSRuntime.InvokeVoidAsync("ShowToastr", "success", "Accesorio actualizado correctamente");
+            navigationManager.NavigateTo("accesorios");
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("ShowToastr", "error", $"Error al actualizar el accesorio: {ex.Message}");
+        }
+    }
+
+    // ⭐ SUBIR ARCHIVO A CLOUDINARY
+    private async Task ManejadorOnSubidaArchivo(InputFileChangeEventArgs e)
+    {
+        var modeloFile = e.File;
+
+        if (modeloFile == null)
+            return;
+
+        if (Path.GetExtension(modeloFile.Name).ToLower() != ".glb")
+        {
+            await JSRuntime.InvokeVoidAsync("ShowToastr", "error", "Seleccione un archivo .glb");
+            return;
+        }
+
+        using var ms = new MemoryStream();
+        await modeloFile.OpenReadStream(15 * 1024 * 1024).CopyToAsync(ms);
+        ms.Seek(0, SeekOrigin.Begin);
+
+        var content = new MultipartFormDataContent();
+        content.Add(new StreamContent(ms), "file", modeloFile.Name);
+
+        var urlCloudinary = await accesoriosServicio.SubidaImagen(content);
+
+        EditarAccesorio.RutaImagen = urlCloudinary;
+
+        await JSRuntime.InvokeVoidAsync("ShowToastr", "success", "Modelo 3D cargado correctamente");
+    }
+
+    private async Task MostrarVistaPrevia3D()
+    {
+        await JSRuntime.InvokeVoidAsync("mostrarModelo3D", EditarAccesorio.RutaImagen);
+    }
+
+    private void EliminarModelo3D()
+    {
+        EditarAccesorio.RutaImagen = null;
+    }
+}

@@ -1,0 +1,69 @@
+﻿@page "/Acceder"
+
+<div class="login-wrapper">
+
+    <div class="login-card">
+
+        <div class="login-header">
+            <img src="assets/img/logo.png" alt="Briz" class="login-logo" />
+            <h1>Acceso al sistema</h1>
+            <p>Ingrese sus credenciales</p>
+        </div>
+
+        @if (MostrarErroresAutenticacion)
+        {
+            <div class="login-error">
+                @Errores
+            </div>
+        }
+
+        <EditForm Model="usuarioAutenticacion"
+                  OnValidSubmit="AccesoUsuario">
+
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label>Usuario</label>
+                <InputText @bind-Value="usuarioAutenticacion.NombreUsuario"
+                           class="form-control"
+                           placeholder="Usuario" />
+                <ValidationMessage For="(() => usuarioAutenticacion.NombreUsuario)" />
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña</label>
+                <InputText type="password"
+                           @bind-Value="usuarioAutenticacion.Password"
+                           class="form-control"
+                           placeholder="Contraseña" />
+                <ValidationMessage For="(() => usuarioAutenticacion.Password)" />
+            </div>
+
+            <button type="submit"
+                    class="login-btn"
+                    disabled="@EstaProcesando">
+                @if (EstaProcesando)
+                {
+                    <span>Validando...</span>
+                }
+                else
+                {
+                    <span>Ingresar</span>
+                }
+            </button>
+
+        </EditForm>
+
+        <div class="login-footer">
+            ¿No tiene cuenta?
+            <a href="registro">Regístrese</a>
+        </div>
+
+    </div>
+
+</div>
+
+
+@code {
+    // Tu código existente aquí
+}

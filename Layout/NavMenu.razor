@@ -1,0 +1,102 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+<header id="header" class="fixed-top">
+    <div class="container d-flex align-items-center justify-content-between">
+
+        @* <h1 class="logo"><a href="index.html">Resi.</a></h1> *@
+        <!-- Uncomment below if you prefer to use an image logo -->
+        <a href="/" class="logo"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>
+
+        <nav id="navbar" class="navbar">
+            <ul>
+                <li><a class="nav-link scrollto" href="/" tabindex="0" onclick="setActiveLink(this)">Inicio</a></li>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <li><a class="nav-link scrollto">Bienvenido, @context.User.Identity.Name</a></li>
+
+                        <AuthorizeView Roles="0">
+                            <Authorized Context="adminContext">
+                                <li>
+                                    <NavLink href="usuarios" class="nav-link scrollto" ActiveClass="active">
+                                        Usuarios
+                                    </NavLink>
+                                </li>
+
+                                <li>
+                                    <NavLink href="accesorios" class="nav-link scrollto" ActiveClass="active">
+                                        Accesorios
+                                    </NavLink>
+                                </li>
+
+                                <li>
+                                    <NavLink href="pedidos" class="nav-link scrollto" ActiveClass="active">
+                                        Pedidos
+                                    </NavLink>
+                                </li>
+
+                                <li>
+                                    <NavLink href="RegistroAdmin" class="nav-link scrollto" ActiveClass="active">
+                                        Registrar
+                                    </NavLink>
+                                </li>
+
+                                <li>
+                                    <NavLink href="reporte" class="nav-link scrollto" ActiveClass="active">
+                                        Reportes
+                                    </NavLink>
+                                </li>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <AuthorizeView Roles="1">
+                            <Authorized Context="clientContext">
+                                <li>
+                                    <NavLink href="bicicleta-personalizada" class="nav-link scrollto" ActiveClass="active">
+                                        Personalizar
+                                    </NavLink>
+                                </li>
+
+                                <li>
+                                    <NavLink href="miPerfil" class="nav-link scrollto" ActiveClass="active">
+                                        <i class="fas fa-user"></i>
+                                    </NavLink>
+                                </li>
+
+                                <li>
+                                    <NavLink href="MonitoreoPedidos" class="nav-link scrollto" ActiveClass="active">
+                                        <i class="fas fa-box"></i>
+                                    </NavLink>
+                                </li>
+                            </Authorized>
+                        </AuthorizeView>
+
+                        <li>
+                            <NavLink href="salir" class="getstarted scrollto">
+                                Salir
+                            </NavLink>
+                        </li>
+                    </Authorized>
+                    <NotAuthorized>
+                        <li>
+                            <NavLink href="Acceder" class="nav-link scrollto" ActiveClass="active">
+                                Acceder
+                            </NavLink>
+                        </li>
+
+                        <li>
+                            <NavLink href="registro" class="nav-link scrollto" ActiveClass="active">
+                                Registrarse
+                            </NavLink>
+                        </li>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </ul>
+            <i class="bi bi-list mobile-nav-toggle"></i>
+        </nav><!-- .navbar -->
+
+    </div>
+</header>
+@code {
+
+}
