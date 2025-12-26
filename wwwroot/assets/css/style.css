@@ -2793,3 +2793,56 @@ section {
             color: #fff;
             text-decoration: none;
         }
+.admin-register {
+    min-height: 100vh;
+    background: #f5f6f8;
+}
+
+.admin-card {
+    background: #ffffff;
+    padding: 40px 45px;
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(0,0,0,.08);
+}
+
+.admin-logo {
+    max-width: 90px;
+}
+
+.admin-title {
+    text-align: center;
+    font-weight: 700;
+    color: #1f2d3d;
+    margin-top: 10px;
+}
+
+.admin-subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.admin-input {
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid #dee2e6;
+}
+
+.admin-input:focus {
+    border-color: #e3b34b;
+    box-shadow: 0 0 0 0.15rem rgba(227,179,75,.25);
+}
+
+.admin-btn {
+    background: #e3b34b;
+    color: #2b2b2b;
+    font-weight: 600;
+    padding: 14px;
+    border-radius: 30px;
+    border: none;
+}
+
+.admin-btn:hover {
+    background: #d4a63f;
+}
