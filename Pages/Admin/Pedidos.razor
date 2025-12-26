@@ -11,12 +11,25 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<Pedidos> Logger
 
-<section class="pedidos-container">
-    
+<section class="users-page">
 
-    <div class="filtros-container">
-        <input type="text" class="filtro-input" placeholder="Buscar por nombre de cliente" @bind="filtroNombre" @bind:event="oninput" @onkeyup="FiltrarPedidos" />
-        <select class="filtro-select" @bind="filtroEstado" @bind:after="FiltrarPedidos">
+    <!-- Header -->
+    <div class="users-header">
+        <h1>Gestión de Pedidos</h1>
+    </div>
+
+    <!-- Filtros -->
+    <div class="users-filters">
+        <input type="text"
+               class="users-input"
+               placeholder="Buscar por nombre del cliente"
+               @bind="filtroNombre"
+               @bind:event="oninput"
+               @onkeyup="FiltrarPedidos" />
+
+        <select class="users-select"
+                @bind="filtroEstado"
+                @bind:after="FiltrarPedidos">
             <option value="">Todos los estados</option>
             @foreach (var estado in Enum.GetValues(typeof(EstadoPedido)))
             {
@@ -27,25 +40,25 @@
 
     @if (cargando)
     {
-        <div class="loading">Cargando...</div>
+        <div class="users-state">Cargando pedidos...</div>
     }
-    else if (error != null)
+    else if (!string.IsNullOrEmpty(error))
     {
-        <div class="error-message">@error</div>
+        <div class="users-error">@error</div>
     }
     else
     {
-        <div class="table-container">
-            <table class="pedidos-table">
+        <div class="users-table-wrapper">
+            <table class="users-table">
                 <thead>
                     <tr>
-                        <th>ID Pedido</th>
-                        <th>Nombre Cliente</th>
+                        <th>ID</th>
+                        <th>Cliente</th>
                         <th>Celular</th>
                         <th>Fecha</th>
                         <th>Total</th>
                         <th>Estado</th>
-                        <th>Acciones</th>
+                        <th class="col-actions">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,10 +73,20 @@
                                 <td>@(usuario != null ? FormatearNumeroCelular(usuario.NumeroCelular) : "N/A")</td>
                                 <td>@pedido.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>Bs @pedido.PrecioTotal.ToString("F2")</td>
-                                <td><span class="estado-badge @pedido.Estado.ToString().ToLower()">@pedido.Estado</span></td>
-                                <td class="acciones-container">
-                                    <button class="btn-detalles" @onclick="() => MostrarDetalles(pedido)">Ver Detalles</button>
-                                    <button class="btn-cambiar-estado" @onclick="() => CambiarEstado(pedido)">Cambiar Estado</button>
+                                <td>
+                                    <span class="pedido-estado @pedido.Estado.ToString().ToLower()">
+                                        @pedido.Estado
+                                    </span>
+                                </td>
+                                <td class="col-actions">
+                                    <button class="users-btn-edit"
+                                            @onclick="() => MostrarDetalles(pedido)">
+                                        Detalles
+                                    </button>
+                                    <button class="users-btn-primary"
+                                            @onclick="() => CambiarEstado(pedido)">
+                                        Estado
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -71,67 +94,17 @@
                     else
                     {
                         <tr>
-                            <td colspan="7" class="no-pedidos">No hay pedidos para mostrar.</td>
+                            <td colspan="7" class="users-state">
+                                No hay pedidos para mostrar.
+                            </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
     }
-
-    @if (pedidoSeleccionado != null)
-    {
-        <div class="modal-overlay">
-            <div class="modal-content">
-                <h2 class="modal-title">Detalles del Pedido</h2>
-                <button class="close-btn" @onclick="CerrarModal">&times;</button>
-                @{
-                    var usuarioSeleccionado = usuarios.FirstOrDefault(u => u.Id == pedidoSeleccionado.UsuarioId);
-                }
-                @if (usuarioSeleccionado != null)
-                {
-                    <p><strong>ID Pedido:</strong> @pedidoSeleccionado.Id</p>
-                    <p><strong>Cliente:</strong> @($"{usuarioSeleccionado.Nombre} {usuarioSeleccionado.Apellido}")</p>
-                    <p><strong>Celular:</strong> @FormatearNumeroCelular(usuarioSeleccionado.NumeroCelular)</p>
-                    <p><strong>Fecha:</strong> @pedidoSeleccionado.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
-                    <p><strong>Estado:</strong> <span class="estado-badge @pedidoSeleccionado.Estado.ToString().ToLower()">@pedidoSeleccionado.Estado</span></p>
-                    <h3>Items:</h3>
-                    <ul class="items-list">
-                        @foreach (var item in pedidoSeleccionado.Items)
-                        {
-                            <li>@item.Accesorio.Nombre - @item.Accesorio.Descripcion - Cantidad: @item.Cantidad - Precio: Bs @item.Accesorio.Precio.ToString("F2")</li>
-                        }
-                    </ul>
-                    <p class="total"><strong>Total: Bs @pedidoSeleccionado.PrecioTotal.ToString("F2")</strong></p>
-                }
-                else
-                {
-                    <p>No se pudo obtener la información del usuario.</p>
-                }
-            </div>
-        </div>
-    }
-
-    @if (mostrarModalEstado)
-    {
-        <div class="modal-overlay">
-            <div class="modal-content">
-                <h2 class="modal-title">Cambiar Estado del Pedido</h2>
-                <button class="close-btn" @onclick="CerrarModalEstado">&times;</button>
-                <select @bind="nuevoEstado" class="estado-select">
-                    @foreach (var estado in Enum.GetValues(typeof(EstadoPedido)))
-                    {
-                        <option value="@estado">@estado</option>
-                    }
-                </select>
-                <div class="modal-footer">
-                    <button type="button" class="btn-guardar" @onclick="GuardarNuevoEstado">Guardar</button>
-                    <button type="button" class="btn-cancelar" @onclick="CerrarModalEstado">Cancelar</button>
-                </div>
-            </div>
-        </div>
-    }
 </section>
+
 
 
 @code {

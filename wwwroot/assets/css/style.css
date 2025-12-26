@@ -2846,3 +2846,39 @@ section {
 .admin-btn:hover {
     background: #d4a63f;
 }
+/* Estados de pedido */
+.pedido-estado {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: capitalize;
+    display: inline-block;
+}
+
+    .pedido-estado.pendiente {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .pedido-estado.procesado {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .pedido-estado.entregado {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .pedido-estado.cancelado {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+/* Ajuste botones acciones */
+.col-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
