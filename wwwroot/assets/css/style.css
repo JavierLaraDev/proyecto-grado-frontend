@@ -2882,3 +2882,58 @@ section {
     gap: 8px;
     justify-content: center;
 }
+/* KPIs */
+.users-kpi {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.06);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+    .users-kpi.highlight {
+        background: #fdf6e3;
+    }
+
+.kpi-title {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+/* Cards */
+.users-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.06);
+}
+
+    .users-card h3 {
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+/* Estado lista */
+.estado-list {
+    list-style: none;
+    padding: 0;
+}
+
+    .estado-list li {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-weight: 500;
+    }
+
+/* Chart */
+.chart-wrapper {
+    height: 280px;
+}
