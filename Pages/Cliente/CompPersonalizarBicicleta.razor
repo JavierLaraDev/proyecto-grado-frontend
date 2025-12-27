@@ -1,16 +1,16 @@
 ﻿@page "/bicicleta-personalizada"
-@using Microsoft.AspNetCore.Components.Authorization
+
 @using Newtonsoft.Json
 @using PersonalizacionProyectoGradoWASM.Servicios.IServicios
 @using PersonalizacionProyectoGradoWASM.Modelos
 @using Microsoft.AspNetCore.Authorization
-@using System.Security.Claims
+@using Blazored.LocalStorage
 
 @inject IJSRuntime JSRuntime
 @inject IAccesoriosServicio AccesoriosServicio
 @inject IPedidosServicio CarritoComprasServicio
-@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorage
 
 @attribute [Authorize(Roles = "1")]
 
@@ -56,7 +56,7 @@
         <div class="right-panel">
 
             <div class="card small-card">
-                <p class="price-label">Color:</p>
+                <p class="price-label">Color</p>
                 <input type="color"
                        class="input-color"
                        @bind="colorBicicleta"
@@ -92,35 +92,33 @@
     private Accesorio bicicletaBase;
     private int userId;
     private string colorBicicleta = "#000000";
+    private bool inicializado = false;
 
-    private bool usuarioInicializado = false;
-
-    // 🔴 CAMBIO CLAVE AQUÍ
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !usuarioInicializado)
+        if (firstRender && !inicializado)
         {
-            await ObtenerUsuarioId();
+            await ObtenerUsuarioIdDesdeLocalStorage();
             await CargarAccesorios();
             await CargarModeloBicicleta();
 
-            usuarioInicializado = true;
+            inicializado = true;
             StateHasChanged();
         }
     }
 
-    private async Task ObtenerUsuarioId()
+    // ✅ SOLUCIÓN DEFINITIVA
+    private async Task ObtenerUsuarioIdDesdeLocalStorage()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        var idString = await LocalStorage.GetItemAsync<string>(Inicializar.Id_Usuario_Local);
 
-        if (!user.Identity.IsAuthenticated)
-            throw new Exception("Usuario no autenticado");
+        if (string.IsNullOrEmpty(idString))
+            throw new Exception("No se encontró el ID del usuario en localStorage");
 
-        var claim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(idString, out userId) || userId <= 0)
+            throw new Exception("ID de usuario inválido");
 
-        if (claim == null || !int.TryParse(claim.Value, out userId))
-            throw new Exception("No se pudo obtener el ID del usuario autenticado");
+        Console.WriteLine($"✅ Usuario autenticado con ID: {userId}");
     }
 
     private async Task CargarAccesorios()
@@ -192,9 +190,9 @@
 
     private async Task RealizarPedido()
     {
-        if (userId == 0)
+        if (userId <= 0)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "No se pudo obtener el ID del usuario");
+            await JSRuntime.InvokeVoidAsync("alert", "Usuario inválido");
             return;
         }
 
