@@ -97,15 +97,21 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !inicializado)
-        {
-            await ObtenerUsuarioIdDesdeLocalStorage();
-            await CargarAccesorios();
-            await CargarModeloBicicleta();
+        if (!firstRender) return;
 
-            inicializado = true;
-            StateHasChanged();
+        var userIdString = await LocalStorage.GetItemAsync<string>(Inicializar.Id_Usuario_Local);
+
+        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out userId))
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "No se pudo obtener el usuario autenticado");
+            NavigationManager.NavigateTo("/Acceder");
+            return;
         }
+
+        await CargarAccesorios();
+        await CargarModeloBicicleta();
+
+        StateHasChanged();
     }
 
     // ✅ SOLUCIÓN DEFINITIVA
@@ -191,12 +197,11 @@
 
     private async Task RealizarPedido()
     {
-        if (userId <= 0)
+        if (userId == 0)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "Usuario inválido");
+            await JSRuntime.InvokeVoidAsync("alert", "No se pudo obtener el ID del usuario");
             return;
         }
-
         var pedido = new PedidosComprasDto
         {
             UsuarioId = userId,
