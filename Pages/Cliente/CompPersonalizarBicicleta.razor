@@ -79,7 +79,6 @@
 </section>
 
 @code {
-
     private string rutaModelo3D;
     private List<string> tiposAccesorios = new()
     {
@@ -99,31 +98,37 @@
     {
         if (!firstRender) return;
 
-        var userIdString = await LocalStorage.GetItemAsync<string>(Inicializar.Id_Usuario_Local);
-
-        if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out userId))
+        try
         {
-            await JSRuntime.InvokeVoidAsync("alert", "No se pudo obtener el usuario autenticado");
-            NavigationManager.NavigateTo("/Acceder");
-            return;
+            // ✅ OBTENER EL USER ID PRIMERO
+            await ObtenerUsuarioIdDesdeLocalStorage();
+
+            // ✅ LUEGO CARGAR LOS DATOS
+            await CargarAccesorios();
+            await CargarModeloBicicleta();
+
+            StateHasChanged();
         }
-
-        await CargarAccesorios();
-        await CargarModeloBicicleta();
-
-        StateHasChanged();
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al inicializar: {ex.Message}");
+            NavigationManager.NavigateTo("/Acceder");
+        }
     }
 
-    // ✅ SOLUCIÓN DEFINITIVA
     private async Task ObtenerUsuarioIdDesdeLocalStorage()
     {
         var idString = await LocalStorage.GetItemAsync<string>(Inicializar.Id_Usuario_Local);
 
         if (string.IsNullOrEmpty(idString))
+        {
             throw new Exception("No se encontró el ID del usuario en localStorage");
+        }
 
         if (!int.TryParse(idString, out userId) || userId <= 0)
+        {
             throw new Exception("ID de usuario inválido");
+        }
 
         Console.WriteLine($"✅ Usuario autenticado con ID: {userId}");
     }
@@ -197,36 +202,56 @@
 
     private async Task RealizarPedido()
     {
-        if (userId == 0)
+        // ✅ VALIDACIÓN MEJORADA
+        if (userId <= 0)
         {
-            await JSRuntime.InvokeVoidAsync("alert", "No se pudo obtener el ID del usuario");
+            await JSRuntime.InvokeVoidAsync("alert", "Error: Usuario no identificado. Por favor, inicie sesión nuevamente.");
+            NavigationManager.NavigateTo("/Acceder");
             return;
         }
-        var pedido = new PedidosComprasDto
-        {
-            UsuarioId = userId,
-            PrecioTotal = precioTotal,
-            FechaCreacion = DateTime.Now,
-            Estado = EstadoPedido.Pendiente,
-            ColorBicicleta = colorBicicleta
-        };
 
-        pedido.Items.Add(new PedidosItemsDto
+        try
         {
-            AccesorioId = bicicletaBase.Id,
-            Cantidad = 1
-        });
-
-        foreach (var acc in accesoriosSeleccionados.Values)
-        {
-            pedido.Items.Add(new PedidosItemsDto
+            var pedido = new PedidosComprasDto
             {
-                AccesorioId = acc.Id,
-                Cantidad = 1
-            });
-        }
+                UsuarioId = userId,
+                PrecioTotal = precioTotal,
+                FechaCreacion = DateTime.Now,
+                Estado = EstadoPedido.Pendiente,
+                ColorBicicleta = colorBicicleta
+            };
 
-        await CarritoComprasServicio.AgregarPedido(pedido);
-        NavigationManager.NavigateTo("/MonitoreoPedidos");
+            // ✅ AGREGAR BICICLETA BASE
+            if (bicicletaBase != null)
+            {
+                pedido.Items.Add(new PedidosItemsDto
+                {
+                    AccesorioId = bicicletaBase.Id,
+                    Cantidad = 1
+                });
+            }
+
+            // ✅ AGREGAR ACCESORIOS SELECCIONADOS
+            foreach (var acc in accesoriosSeleccionados.Values)
+            {
+                pedido.Items.Add(new PedidosItemsDto
+                {
+                    AccesorioId = acc.Id,
+                    Cantidad = 1
+                });
+            }
+
+            Console.WriteLine($"🚀 Enviando pedido para usuario ID: {userId}");
+
+            await CarritoComprasServicio.AgregarPedido(pedido);
+
+            await JSRuntime.InvokeVoidAsync("alert", "¡Pedido realizado exitosamente!");
+            NavigationManager.NavigateTo("/MonitoreoPedidos");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error al realizar pedido: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("alert", $"Error al procesar el pedido: {ex.Message}");
+        }
     }
 }
