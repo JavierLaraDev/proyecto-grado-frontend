@@ -221,14 +221,20 @@
                 ColorBicicleta = colorBicicleta
             };
 
+            Console.WriteLine($"🚀 Creando pedido para usuario ID: {userId}");
+
             // ✅ AGREGAR BICICLETA BASE
             if (bicicletaBase != null)
             {
                 pedido.Items.Add(new PedidosItemsDto
                 {
-                    AccesorioId = bicicletaBase.Id,
-                    Cantidad = 1
+                    Cantidad = 1,
+                    Accesorio = new Accesorio
+                    {
+                        Id = bicicletaBase.Id
+                    }
                 });
+                Console.WriteLine($"  - Bicicleta base: {bicicletaBase.Id}");
             }
 
             // ✅ AGREGAR ACCESORIOS SELECCIONADOS
@@ -236,12 +242,16 @@
             {
                 pedido.Items.Add(new PedidosItemsDto
                 {
-                    AccesorioId = acc.Id,
-                    Cantidad = 1
+                    Cantidad = 1,
+                    Accesorio = new Accesorio
+                    {
+                        Id = acc.Id
+                    }
                 });
+                Console.WriteLine($"  - Accesorio: {acc.Descripcion} (ID: {acc.Id})");
             }
 
-            Console.WriteLine($"🚀 Enviando pedido para usuario ID: {userId}");
+            Console.WriteLine($"📦 Total items: {pedido.Items.Count}, Precio: Bs {precioTotal:F2}");
 
             await CarritoComprasServicio.AgregarPedido(pedido);
 

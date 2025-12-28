@@ -237,7 +237,9 @@
                 {
                     foreach (var item in pedido.Items)
                     {
-                        Console.WriteLine($"  - Item: AccesorioId: {item.AccesorioId}, Nombre: {item.Accesorio?.Nombre ?? "N/A"}, Descripción: {item.Accesorio?.Descripcion ?? "N/A"}, Cantidad: {item.Cantidad}, Precio: {item.Accesorio?.Precio ?? 0:F2}, Costo: {item.Accesorio?.Costo ?? 0:F2}");
+                        // ✅ CAMBIO: Usar item.Accesorio.Id en lugar de item.AccesorioId
+                        var accesorioId = item.Accesorio?.Id ?? 0;
+                        Console.WriteLine($"  - Item: AccesorioId: {accesorioId}, Nombre: {item.Accesorio?.Nombre ?? "N/A"}, Descripción: {item.Accesorio?.Descripcion ?? "N/A"}, Cantidad: {item.Cantidad}, Precio: {item.Accesorio?.Precio ?? 0:F2}, Costo: {item.Accesorio?.Costo ?? 0:F2}");
                     }
                 }
                 else
@@ -273,13 +275,15 @@
             // Sumamos el precio total del pedido
             ganancias += pedido.PrecioTotal;
 
-
             // Restamos el costo de todos los accesorios
-            foreach (var item in pedido.Items)
+            if (pedido.Items != null)
             {
-                if (item.Accesorio != null)
+                foreach (var item in pedido.Items)
                 {
-                    ganancias -= item.Accesorio.Costo * item.Cantidad;
+                    if (item.Accesorio != null)
+                    {
+                        ganancias -= item.Accesorio.Costo * item.Cantidad;
+                    }
                 }
             }
         }
@@ -308,28 +312,28 @@
         var ventasPorCliente = CalcularVentasPorCliente(pedidosFiltrados);
 
         reporteMensual = new Reporte
-            {
-                TotalVentas = ganancias,
-                ProductosVendidos = accesoriosVendidos,
-                VentasPorCliente = ventasPorCliente,
-                Pedidos = pedidosFiltrados
-            };
+        {
+            TotalVentas = ganancias,
+            ProductosVendidos = accesoriosVendidos,
+            VentasPorCliente = ventasPorCliente,
+            Pedidos = pedidosFiltrados
+        };
 
         Console.WriteLine($"Reporte mensual generado. Ganancias: {ganancias:F2}, Productos vendidos: {accesoriosVendidos.Count}, Clientes: {ventasPorCliente.Count}");
-
     }
 
     private async Task GenerarReporteAnual()
     {
         var pedidosAnio = pedidos.Where(p => p.FechaCreacion.Year == anioSeleccionado).ToList();
         var pedidosEntregadosAnio = pedidosAnio.Where(p => p.Estado == EstadoPedido.Entregado).ToList();
+
         reporteAnual = new Reporte
-            {
-                TotalVentas = CalcularGananciasTotales(pedidosEntregadosAnio),
-                ProductosVendidos = CalcularAccesoriosVendidos(pedidosEntregadosAnio),
-                VentasPorCliente = CalcularVentasPorCliente(pedidosEntregadosAnio),
-                Pedidos = pedidosEntregadosAnio
-            };
+        {
+            TotalVentas = CalcularGananciasTotales(pedidosEntregadosAnio),
+            ProductosVendidos = CalcularAccesoriosVendidos(pedidosEntregadosAnio),
+            VentasPorCliente = CalcularVentasPorCliente(pedidosEntregadosAnio),
+            Pedidos = pedidosEntregadosAnio
+        };
     }
 
     private Dictionary<string, int> CalcularAccesoriosVendidos(List<PedidosComprasDto> pedidosLista)
@@ -338,11 +342,15 @@
 
         foreach (var pedido in pedidosLista)
         {
+            // ✅ VALIDACIÓN: Verificar que Items no sea null
+            if (pedido.Items == null) continue;
+
             foreach (var item in pedido.Items)
             {
                 if (item.Accesorio != null && item.Accesorio.Nombre != "Bicicleta") // Excluimos la bicicleta base
                 {
                     string accesorioKey = $"{item.Accesorio.Nombre} - {item.Accesorio.Descripcion}";
+
                     if (accesoriosVendidos.ContainsKey(accesorioKey))
                     {
                         accesoriosVendidos[accesorioKey] += item.Cantidad;
@@ -351,6 +359,7 @@
                     {
                         accesoriosVendidos[accesorioKey] = item.Cantidad;
                     }
+
                     Console.WriteLine($"Accesorio contado: {accesorioKey}, Cantidad: {item.Cantidad}");
                 }
             }
@@ -419,11 +428,13 @@
                 productTable.SetWidths(new float[] { 3f, 1f });
                 productTable.AddCell(new PdfPCell(new Phrase("Producto (Nombre - Descripción)")) { BackgroundColor = BaseColor.LIGHT_GRAY });
                 productTable.AddCell(new PdfPCell(new Phrase("Cantidad")) { BackgroundColor = BaseColor.LIGHT_GRAY });
+
                 foreach (var producto in reporte.ProductosVendidos.Take(5))
                 {
                     productTable.AddCell(producto.Key);
                     productTable.AddCell(producto.Value.ToString());
                 }
+
                 document.Add(productTable);
                 document.Add(Chunk.NEWLINE);
                 document.Add(Chunk.NEWLINE);
@@ -439,14 +450,16 @@
                 clientTable.SetWidths(new float[] { 1f, 2f });
                 clientTable.AddCell(new PdfPCell(new Phrase("Cliente ID")) { BackgroundColor = BaseColor.LIGHT_GRAY });
                 clientTable.AddCell(new PdfPCell(new Phrase("Total Ventas")) { BackgroundColor = BaseColor.LIGHT_GRAY });
+
                 foreach (var cliente in reporte.VentasPorCliente.Take(5))
                 {
                     clientTable.AddCell(cliente.Key.ToString());
                     clientTable.AddCell($"Bs. {cliente.Value:F2}");
                 }
-                document.Add(clientTable);
 
+                document.Add(clientTable);
                 document.Close();
+
                 byte[] pdfBytes = ms.ToArray();
                 await JSRuntime.InvokeVoidAsync("saveAsFile", $"reporte_ventas_{tipo}.pdf", Convert.ToBase64String(pdfBytes));
             }
@@ -456,6 +469,7 @@
             await JSRuntime.InvokeVoidAsync("alert", $"Error al exportar a PDF: {ex.Message}");
         }
     }
+
     private async Task ExportarExcel(Reporte reporte, string tipo)
     {
         try
@@ -484,6 +498,7 @@
                 worksheet.Cells["A6"].Style.Font.Bold = true;
                 worksheet.Cells["A7"].Value = "Producto";
                 worksheet.Cells["B7"].Value = "Cantidad";
+
                 int row = 8;
                 foreach (var producto in reporte.ProductosVendidos)
                 {
@@ -501,6 +516,7 @@
                 worksheet.Cells[$"A{row}"].Value = "Cliente ID";
                 worksheet.Cells[$"B{row}"].Value = "Total Ventas";
                 row++;
+
                 foreach (var cliente in reporte.VentasPorCliente)
                 {
                     worksheet.Cells[$"A{row}"].Value = cliente.Key;
@@ -522,6 +538,7 @@
             await JSRuntime.InvokeVoidAsync("alert", $"Error al exportar a Excel: {ex.Message}. Por favor, contacte al soporte técnico.");
         }
     }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
