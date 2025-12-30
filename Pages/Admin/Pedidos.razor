@@ -6,6 +6,8 @@
 @using PersonalizacionProyectoGradoWASM.Modelos
 @using PersonalizacionProyectoGradoWASM.Servicios.IServicios
 @using System.Security.Claims
+@using PersonalizacionProyectoGradoWASM.Components.Modals
+
 
 @inject IPedidosServicio PedidosServicio
 @inject IUsuariosServicio UsuariosServicio
@@ -104,12 +106,9 @@
         </div>
     }
 </section>
-
-<!-- MODAL DETALLE -->
 <PedidoDetalleModal Pedido="pedidoDetalle"
                     OnCerrar="CerrarDetalle" />
 
-<!-- MODAL ESTADO -->
 <PedidoEstadoModal Pedido="pedidoEstado"
                    OnConfirmar="GuardarEstado"
                    OnCancelar="CerrarEstado" />
