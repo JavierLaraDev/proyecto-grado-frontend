@@ -1,35 +1,33 @@
 ﻿@page "/pedidos"
 @attribute [Authorize(Roles = "0")]
+
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
-@using PersonalizacionProyectoGradoWASM.Servicios
 @using PersonalizacionProyectoGradoWASM.Modelos
 @using PersonalizacionProyectoGradoWASM.Servicios.IServicios
 @using System.Security.Claims
-@inject IPedidosServicio CarritoComprasServicio
+
+@inject IPedidosServicio PedidosServicio
 @inject IUsuariosServicio UsuariosServicio
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<Pedidos> Logger
 
 <section class="users-page">
 
-    <!-- Header -->
+    <!-- HEADER -->
     <div class="users-header">
         <h1>Gestión de Pedidos</h1>
     </div>
 
-    <!-- Filtros -->
+    <!-- FILTROS -->
     <div class="users-filters">
-        <input type="text"
-               class="users-input"
+        <input class="users-input"
                placeholder="Buscar por nombre del cliente"
                @bind="filtroNombre"
-               @bind:event="oninput"
-               @onkeyup="FiltrarPedidos" />
+               @bind:event="oninput" />
 
         <select class="users-select"
-                @bind="filtroEstado"
-                @bind:after="FiltrarPedidos">
+                @bind="filtroEstado">
             <option value="">Todos los estados</option>
             @foreach (var estado in Enum.GetValues(typeof(EstadoPedido)))
             {
@@ -62,15 +60,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (pedidosFiltrados != null && pedidosFiltrados.Any())
+                    @if (pedidosFiltrados.Any())
                     {
                         @foreach (var pedido in pedidosFiltrados)
                         {
                             var usuario = usuarios.FirstOrDefault(u => u.Id == pedido.UsuarioId);
+
                             <tr>
                                 <td>@pedido.Id</td>
                                 <td>@(usuario != null ? $"{usuario.Nombre} {usuario.Apellido}" : "N/A")</td>
-                                <td>@(usuario != null ? FormatearNumeroCelular(usuario.NumeroCelular) : "N/A")</td>
+                                <td>@(usuario != null ? FormatearCelular(usuario.NumeroCelular) : "N/A")</td>
                                 <td>@pedido.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>Bs @pedido.PrecioTotal.ToString("F2")</td>
                                 <td>
@@ -80,11 +79,12 @@
                                 </td>
                                 <td class="col-actions">
                                     <button class="users-btn-edit"
-                                            @onclick="() => MostrarDetalles(pedido)">
+                                            @onclick="() => AbrirDetalle(pedido.Id)">
                                         Detalles
                                     </button>
+
                                     <button class="users-btn-primary"
-                                            @onclick="() => CambiarEstado(pedido)">
+                                            @onclick="() => AbrirEstado(pedido)">
                                         Estado
                                     </button>
                                 </td>
@@ -105,54 +105,53 @@
     }
 </section>
 
+<!-- MODAL DETALLE -->
+<PedidoDetalleModal Pedido="pedidoDetalle"
+                    OnCerrar="CerrarDetalle" />
 
+<!-- MODAL ESTADO -->
+<PedidoEstadoModal Pedido="pedidoEstado"
+                   OnConfirmar="GuardarEstado"
+                   OnCancelar="CerrarEstado" />
 
 @code {
-    private List<PedidosComprasDto> pedidos;
-    private List<PedidosComprasDto> pedidosFiltrados;
-    private IEnumerable<UsuarioGestion> usuarios;
-    private PedidosComprasDto pedidoSeleccionado;
-    private bool mostrarModalEstado = false;
-    private EstadoPedido nuevoEstado;
+
+    // =========================
+    // ESTADO
+    // =========================
+    private List<PedidosComprasDto> pedidos = new();
+    private List<PedidosComprasDto> pedidosFiltrados = new();
+    private IEnumerable<UsuarioGestion> usuarios = Enumerable.Empty<UsuarioGestion>();
+
+    private PedidosComprasDto pedidoDetalle;
+    private PedidosComprasDto pedidoEstado;
+
     private bool cargando = true;
     private string error;
+
     private string filtroNombre = "";
     private string filtroEstado = "";
 
+    // =========================
+    // CICLO DE VIDA
+    // =========================
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            Logger.LogInformation("Iniciando OnInitializedAsync");
             var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-
-            if (user.Identity.IsAuthenticated)
+            if (!authState.User.IsInRole("0"))
             {
-                Logger.LogInformation($"Usuario autenticado: {user.Identity.Name}");
-                var roles = user.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value);
-                Logger.LogInformation($"Roles del usuario: {string.Join(", ", roles)}");
+                error = "No tiene permisos para acceder a esta página.";
+                return;
+            }
 
-                if (user.IsInRole("0"))
-                {
-                    await CargarDatos();
-                }
-                else
-                {
-                    error = "No tienes permiso para ver esta página.";
-                    Logger.LogWarning($"Intento de acceso no autorizado: {user.Identity.Name}");
-                }
-            }
-            else
-            {
-                error = "Usuario no autenticado.";
-                Logger.LogWarning("Intento de acceso no autenticado");
-            }
+            await CargarDatos();
         }
         catch (Exception ex)
         {
-            error = "Ocurrió un error al cargar la página.";
-            Logger.LogError(ex, "Error en OnInitializedAsync");
+            error = "Error al cargar la página.";
+            Logger.LogError(ex, error);
         }
         finally
         {
@@ -160,113 +159,77 @@
         }
     }
 
+    // =========================
+    // DATOS
+    // =========================
     private async Task CargarDatos()
     {
-        try
-        {
-            Logger.LogInformation("Iniciando carga de datos...");
-            var pedidosTask = CarritoComprasServicio.GetPedidos();
-            var usuariosTask = UsuariosServicio.GetUsuarios();
+        var pedidosTask = PedidosServicio.GetPedidos();
+        var usuariosTask = UsuariosServicio.GetUsuarios();
 
-            await Task.WhenAll(pedidosTask, usuariosTask);
+        await Task.WhenAll(pedidosTask, usuariosTask);
 
-            pedidos = await pedidosTask;
-            usuarios = await usuariosTask;
+        pedidos = await pedidosTask;
+        usuarios = await usuariosTask;
 
-            Logger.LogInformation($"Pedidos cargados: {pedidos?.Count ?? 0}");
-            Logger.LogInformation($"Usuarios cargados: {usuarios?.Count() ?? 0}");
-
-            FiltrarPedidos();
-        }
-        catch (Exception ex)
-        {
-            error = "Error al cargar los datos.";
-            Logger.LogError(ex, "Error en CargarDatos");
-        }
+        Filtrar();
     }
 
-    private void FiltrarPedidos()
+    private void Filtrar()
     {
-        pedidosFiltrados = pedidos
-            ?.Where(p =>
-                (string.IsNullOrEmpty(filtroNombre) ||
-                 (usuarios.FirstOrDefault(u => u.Id == p.UsuarioId)?.Nombre + " " +
-                  usuarios.FirstOrDefault(u => u.Id == p.UsuarioId)?.Apellido)
-                    .Contains(filtroNombre, StringComparison.OrdinalIgnoreCase)) &&
-                (string.IsNullOrEmpty(filtroEstado) || p.Estado.ToString() == filtroEstado))
-            .ToList();
+        pedidosFiltrados = pedidos.Where(p =>
+            (string.IsNullOrEmpty(filtroNombre) ||
+             $"{usuarios.FirstOrDefault(u => u.Id == p.UsuarioId)?.Nombre} {usuarios.FirstOrDefault(u => u.Id == p.UsuarioId)?.Apellido}"
+             .Contains(filtroNombre, StringComparison.OrdinalIgnoreCase))
+            &&
+            (string.IsNullOrEmpty(filtroEstado) || p.Estado.ToString() == filtroEstado)
+        ).ToList();
     }
 
-    private async Task MostrarDetalles(PedidosComprasDto pedido)
+    // =========================
+    // MODAL DETALLE
+    // =========================
+    private async Task AbrirDetalle(int pedidoId)
     {
-        Logger.LogInformation($"Mostrando detalles del pedido {pedido.Id}");
-        try
-        {
-            pedidoSeleccionado = await CarritoComprasServicio.GetPedido(pedido.Id);
-            if (pedidoSeleccionado == null)
-            {
-                Logger.LogWarning($"No se pudo cargar el pedido {pedido.Id}");
-                error = "No se pudo cargar el pedido.";
-            }
-            else if (pedidoSeleccionado.Items == null || !pedidoSeleccionado.Items.Any())
-            {
-                Logger.LogWarning($"No se encontraron items para el pedido {pedido.Id}");
-            }
-            else
-            {
-                Logger.LogInformation($"Cargados {pedidoSeleccionado.Items.Count} items para el pedido {pedido.Id}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, $"Error al cargar los detalles del pedido {pedido.Id}");
-            error = $"Error al cargar los detalles del pedido: {ex.Message}";
-        }
+        pedidoDetalle = await PedidosServicio.GetPedido(pedidoId);
     }
 
-    private void CerrarModal()
+    private void CerrarDetalle()
     {
-        Logger.LogInformation("Cerrando modal de detalles");
-        pedidoSeleccionado = null;
+        pedidoDetalle = null;
     }
 
-    private string FormatearNumeroCelular(int numeroCelular)
+    // =========================
+    // MODAL ESTADO
+    // =========================
+    private void AbrirEstado(PedidosComprasDto pedido)
     {
-        return numeroCelular.ToString("### ### ###");
+        pedidoEstado = pedido;
     }
 
-    private void CambiarEstado(PedidosComprasDto pedido)
+    private void CerrarEstado()
     {
-        Logger.LogInformation($"Iniciando cambio de estado para el pedido {pedido.Id}");
-        pedidoSeleccionado = pedido;
-        nuevoEstado = pedido.Estado;
-        mostrarModalEstado = true;
+        pedidoEstado = null;
     }
 
-    private void CerrarModalEstado()
+    private async Task GuardarEstado(EstadoPedido nuevoEstado)
     {
-        Logger.LogInformation("Cerrando modal de cambio de estado");
-        mostrarModalEstado = false;
+        if (pedidoEstado == null) return;
+
+        await PedidosServicio.ActualizarEstadoPedido(pedidoEstado.Id, nuevoEstado);
+        pedidoEstado = null;
+
+        await CargarDatos();
     }
 
-    private async Task GuardarNuevoEstado()
+    // =========================
+    // UTIL
+    // =========================
+    private string FormatearCelular(int numero)
+        => numero.ToString("### ### ###");
+
+    protected override void OnParametersSet()
     {
-        if (pedidoSeleccionado != null)
-        {
-            try
-            {
-                Logger.LogInformation($"Guardando nuevo estado {nuevoEstado} para el pedido {pedidoSeleccionado.Id}");
-                pedidoSeleccionado.Estado = nuevoEstado;
-                await CarritoComprasServicio.ActualizarEstadoPedido(pedidoSeleccionado.Id, nuevoEstado);
-                Logger.LogInformation($"Estado del pedido {pedidoSeleccionado.Id} actualizado a {nuevoEstado}");
-                mostrarModalEstado = false;
-                await CargarDatos();
-            }
-            catch (Exception ex)
-            {
-                error = "Error al actualizar el estado del pedido.";
-                Logger.LogError(ex, $"Error al actualizar el estado del pedido {pedidoSeleccionado.Id}");
-            }
-        }
+        Filtrar();
     }
 }
