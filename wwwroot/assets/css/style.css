@@ -2943,47 +2943,237 @@ section {
         background: #f8d7da;
         color: #721c24;
     }
+/* ======================================================
+   BACKDROP
+   ====================================================== */
 .modal-backdrop-pedido {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.55);
+    background: rgba(0, 0, 0, 0.55);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
 }
 
+/* ======================================================
+   CARD
+   ====================================================== */
 .modal-card-pedido {
-    background: #fff;
-    border-radius: 12px;
+    background: #ffffff;
+    border-radius: 14px;
     width: 90%;
-    max-width: 800px;
-    padding: 20px;
+    max-width: 850px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    animation: scaleIn 0.25s ease;
 }
 
     .modal-card-pedido.small-pedido {
-        max-width: 400px;
+        max-width: 420px;
     }
 
+/* ======================================================
+   HEADER
+   ====================================================== */
 .modal-header-pedido {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+    .modal-header-pedido h3 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #4b0082;
+    }
+
 .modal-close-pedido {
     background: none;
     border: none;
-    font-size: 18px;
+    font-size: 22px;
     cursor: pointer;
+    color: #555;
 }
 
+    .modal-close-pedido:hover {
+        color: #000;
+    }
+
+/* ======================================================
+   BODY
+   ====================================================== */
+.modal-body-pedido {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #444;
+}
+
+/* ======================================================
+   INFO SUPERIOR (FECHA / ESTADO)
+   ====================================================== */
+.pedido-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+    .pedido-info .label {
+        font-size: 12px;
+        color: #777;
+        display: block;
+    }
+
+/* ======================================================
+   ESTADOS (CHIPS)
+   ====================================================== */
+.estado-chip {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+    .estado-chip.pendiente {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .estado-chip.enproceso {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .estado-chip.enviado {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .estado-chip.entregado {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .estado-chip.cancelado {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+/* ======================================================
+   DIVIDER
+   ====================================================== */
+.divider {
+    margin: 16px 0;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* ======================================================
+   TABLA DE ITEMS
+   ====================================================== */
+.pedido-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+    .pedido-table th {
+        text-align: left;
+        font-weight: 600;
+        padding-bottom: 8px;
+        color: #555;
+    }
+
+    .pedido-table td {
+        padding: 10px 0;
+        border-bottom: 1px dashed #eee;
+    }
+
+        .pedido-table th.center,
+        .pedido-table td.center {
+            text-align: center;
+        }
+
+        .pedido-table th.right,
+        .pedido-table td.right {
+            text-align: right;
+        }
+
+    .pedido-table .bold {
+        font-weight: 600;
+    }
+
+    .pedido-table .accesorio {
+        color: #4b0082;
+    }
+
+/* ======================================================
+   TOTAL
+   ====================================================== */
+.total-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #4b0082;
+    font-size: 22px;
+    font-weight: 700;
+    color: #4b0082;
+}
+
+/* ======================================================
+   BOTONES (MODAL ESTADO)
+   ====================================================== */
 .modal-actions-pedido {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
     margin-top: 20px;
 }
+
+.users-btn-primary {
+    background: #4b0082;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+    .users-btn-primary:hover {
+        background: #3a0066;
+    }
+
+.users-btn-cancel {
+    background: #e0e0e0;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+    .users-btn-cancel:hover {
+        background: #cfcfcf;
+    }
+
+/* ======================================================
+   ANIMACIÓN
+   ====================================================== */
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 
 /* Ajuste botones acciones */
 .col-actions {
