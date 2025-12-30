@@ -4,7 +4,7 @@ namespace PersonalizacionProyectoGradoWASM.Servicios.IServicios
 {
     public interface IPedidosServicio
     {
-        Task<PedidosComprasDto> AgregarPedido(PedidosComprasDto carrito);
+        Task<PedidosComprasDto> AgregarPedido(PedidoCrearDto pedido);
         Task<PedidosComprasDto> GetPedido(int userId);
         Task<List<PedidosComprasDto>> GetPedidos();
         Task<bool> ActualizarEstadoPedido(int pedidoId, EstadoPedido nuevoEstado);
