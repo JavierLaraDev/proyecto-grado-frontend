@@ -1,108 +1,133 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
-@using System.Security.Claims
+
 <header id="header" class="fixed-top">
     <div class="container d-flex align-items-center justify-content-between">
 
-        @* <h1 class="logo"><a href="index.html">Resi.</a></h1> *@
-        <!-- Uncomment below if you prefer to use an image logo -->
-        <a href="/" class="logo"><img src="assets/img/logo.png" alt="" class="img-fluid"></a>
+        <!-- LOGO -->
+        <NavLink href="/" class="logo">
+            <img src="assets/img/logo.png" alt="Briz" class="img-fluid" />
+        </NavLink>
 
+        <!-- NAV -->
         <nav id="navbar" class="navbar">
             <ul>
-                <li><a class="nav-link scrollto" href="/" tabindex="0" onclick="setActiveLink(this)">Inicio</a></li>
 
-                <AuthorizeView>
+                <!-- INICIO -->
+                <li>
+                    <NavLink href="/" class="nav-link" ActiveClass="active">
+                        Inicio
+                    </NavLink>
+                </li>
+
+                <AuthorizeView Context="auth">
                     <Authorized>
-                        <li><a class="nav-link scrollto">Bienvenido, @context.User.Identity.Name</a></li>
 
-                        <AuthorizeView Roles="0">
-                            <Authorized Context="adminContext">
-                                <li>
-                                    <NavLink href="usuarios" class="nav-link scrollto" ActiveClass="active">
-                                        Usuarios
-                                    </NavLink>
-                                </li>
+                        <!-- BIENVENIDA -->
+                        <li class="welcome">
+                            Hola, @auth.User.Identity.Name
+                        </li>
 
-                                <li>
-                                    <NavLink href="accesorios" class="nav-link scrollto" ActiveClass="active">
-                                        Accesorios
-                                    </NavLink>
-                                </li>
+                        @* ================= ADMIN ================= *@
+                        @if (auth.User.IsInRole("0"))
+                        {
+                            <li class="nav-divider"></li>
 
-                                <li>
-                                    <NavLink href="pedidos" class="nav-link scrollto" ActiveClass="active">
-                                        Pedidos
-                                    </NavLink>
-                                </li>
+                            <li>
+                                <NavLink href="usuarios" class="nav-link" ActiveClass="active">
+                                    Usuarios
+                                </NavLink>
+                            </li>
 
-                                <li>
-                                    <NavLink href="reporte" class="nav-link scrollto" ActiveClass="active">
-                                        Reportes
-                                    </NavLink>
-                                </li>
-                            </Authorized>
-                        </AuthorizeView>
+                            <li>
+                                <NavLink href="accesorios" class="nav-link" ActiveClass="active">
+                                    Accesorios
+                                </NavLink>
+                            </li>
 
-                        <AuthorizeView Roles="1">
-                            <Authorized Context="clientContext">
+                            <li>
+                                <NavLink href="pedidos" class="nav-link" ActiveClass="active">
+                                    Pedidos
+                                </NavLink>
+                            </li>
 
-                                <li>
-                                    <NavLink href="bicicleta-personalizada"
-                                             class="nav-link nav-client"
-                                             ActiveClass="active">
-                                        <i class="fas fa-bicycle"></i>
-                                        <span>Personalizar</span>
-                                    </NavLink>
-                                </li>
+                            <li>
+                                <NavLink href="reporte" class="nav-link" ActiveClass="active">
+                                    Reportes
+                                </NavLink>
+                            </li>
+                        }
 
-                                <li>
-                                    <NavLink href="MonitoreoPedidos"
-                                             class="nav-link nav-client"
-                                             ActiveClass="active">
-                                        <i class="fas fa-box"></i>
-                                        <span>Mis pedidos</span>
-                                    </NavLink>
-                                </li>
+                        @* ================= CLIENTE ================= *@
+                        @if (auth.User.IsInRole("1"))
+                        {
+                            <li class="nav-divider"></li>
 
-                                <li>
-                                    <NavLink href="miPerfil"
-                                             class="nav-link nav-client"
-                                             ActiveClass="active">
-                                        <i class="fas fa-user"></i>
-                                        <span>Mi perfil</span>
-                                    </NavLink>
-                                </li>
+                            <li>
+                                <NavLink href="bicicleta-personalizada"
+                                         class="nav-link nav-client nav-cta"
+                                         ActiveClass="active">
+                                    <i class="fas fa-bicycle"></i>
+                                    Personalizar
+                                </NavLink>
+                            </li>
 
-                            </Authorized>
-                        </AuthorizeView>
+                            <li>
+                                <NavLink href="MonitoreoPedidos"
+                                         class="nav-link nav-client"
+                                         ActiveClass="active">
+                                    <i class="fas fa-box"></i>
+                                    Mis pedidos
+                                </NavLink>
+                            </li>
 
+                            <li>
+                                <NavLink href="miPerfil"
+                                         class="nav-link nav-client"
+                                         ActiveClass="active">
+                                    <i class="fas fa-user"></i>
+                                    Mi perfil
+                                </NavLink>
+                            </li>
+                        }
+
+                        <!-- SALIR -->
+                        <li class="nav-divider"></li>
 
                         <li>
-                            <NavLink href="salir" class="getstarted scrollto">
+                            <NavLink href="salir" class="getstarted">
                                 Salir
                             </NavLink>
                         </li>
+
                     </Authorized>
+
                     <NotAuthorized>
+
                         <li>
-                            <NavLink href="Acceder" class="nav-link scrollto" ActiveClass="active">
+                            <NavLink href="Acceder" class="nav-link" ActiveClass="active">
                                 Acceder
                             </NavLink>
                         </li>
 
                         <li>
-                            <NavLink href="registro" class="nav-link scrollto" ActiveClass="active">
+                            <NavLink href="registro" class="nav-link" ActiveClass="active">
                                 Registrarse
                             </NavLink>
                         </li>
+
                     </NotAuthorized>
                 </AuthorizeView>
+
             </ul>
+
+            <!-- MOBILE -->
             <i class="bi bi-list mobile-nav-toggle"></i>
-        </nav><!-- .navbar -->
+        </nav>
 
     </div>
 </header>
+
+
 @code {
 
 }
