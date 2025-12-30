@@ -2,53 +2,69 @@
 
 @if (Pedido != null)
 {
-    <div class="modal-body-pedido">
+    <div class="modal-backdrop-pedido">
 
-        <div class="pedido-info">
-            <div>
-                <span class="label">Fecha</span>
-                <span>@Pedido.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</span>
+        <div class="modal-card-pedido">
+
+            <!-- HEADER -->
+            <div class="modal-header-pedido">
+                <h3>Detalles del Pedido #@Pedido.Id</h3>
+                <button class="modal-close-pedido" @onclick="Cerrar">✖</button>
             </div>
 
-            <div>
-                <span class="label">Estado</span>
-                <span class="estado-chip pendiente">@Pedido.Estado</span>
+            <!-- BODY -->
+            <div class="modal-body-pedido">
+
+                <div class="pedido-info">
+                    <div>
+                        <span class="label">Fecha</span>
+                        <span>@Pedido.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+
+                    <div>
+                        <span class="label">Estado</span>
+                        <span class="estado-chip @Pedido.Estado.ToString().ToLower()">
+                            @Pedido.Estado
+                        </span>
+                    </div>
+                </div>
+
+                <hr class="divider" />
+
+                <table class="pedido-table">
+                    <thead>
+                        <tr>
+                            <th>Accesorio</th>
+                            <th class="center">Cant.</th>
+                            <th class="right">Precio Unit.</th>
+                            <th class="right">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Pedido.Items)
+                        {
+                            <tr>
+                                <td class="accesorio">@item.Accesorio.Descripcion</td>
+                                <td class="center">@item.Cantidad</td>
+                                <td class="right">
+                                    Bs @item.Accesorio.Precio.ToString("F2")
+                                </td>
+                                <td class="right bold">
+                                    Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="total-box">
+                    <span>Total</span>
+                    <span>Bs @Pedido.PrecioTotal.ToString("F2")</span>
+                </div>
+
             </div>
         </div>
-
-        <hr class="divider" />
-
-        <table class="pedido-table">
-            <thead>
-                <tr>
-                    <th>Accesorio</th>
-                    <th>Cant.</th>
-                    <th>Precio Unit.</th>
-                    <th>Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Pedido.Items)
-                {
-                    <tr>
-                        <td class="accesorio">@item.Accesorio.Descripcion</td>
-                        <td class="center">@item.Cantidad</td>
-                        <td class="right">Bs @item.Accesorio.Precio.ToString("F2")</td>
-                        <td class="right bold">
-                            Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
-        <div class="total-box">
-            <span>Total</span>
-            <span>Bs @Pedido.PrecioTotal.ToString("F2")</span>
-        </div>
-
     </div>
-
 }
 
 @code {
@@ -60,3 +76,4 @@
         await OnCerrar.InvokeAsync();
     }
 }
+
