@@ -1,4 +1,6 @@
 ﻿@page "/MonitoreoPedidos"
+@attribute [Authorize(Roles = "1")]
+
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using PersonalizacionProyectoGradoWASM.Modelos
@@ -7,168 +9,142 @@
 
 @inject IPedidosServicio PedidosServicio
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IJSRuntime JSRuntime
 
-@attribute [Authorize(Roles = "1")]
+<section id="mp-pedidos">
+    <div class="mp-container">
 
-<section id="orders">
-    <div class="orders-wrapper">
+        <!-- HEADER -->
+        <div class="mp-header">
+            <h1>Mis Pedidos</h1>
+            <p>Gestiona y revisa el estado de tus pedidos</p>
+        </div>
 
-        <h1 class="orders-title">Mis pedidos</h1>
+        <!-- STATS / FILTROS -->
+        <div class="mp-stats">
+            <div class="mp-stat @(filtroEstado == null ? "active" : "")"
+                 @onclick="() => CambiarFiltro(null)">
+                <span>Total</span>
+                <strong>@pedidos.Count</strong>
+            </div>
 
-        @if (pedidos.Any())
-        {
-            @foreach (var pedido in pedidos.OrderByDescending(p => p.Id))
+            @foreach (EstadoPedido estado in Enum.GetValues(typeof(EstadoPedido)))
             {
-                <article class="order-card" @key="pedido.Id">
-
-                    <!-- Header -->
-                    <header class="order-header">
-                        <div>
-                            <span class="order-id">Pedido #@pedido.Id</span>
-                            <span class="order-sub">Seguimiento del pedido</span>
-                        </div>
-
-                        <span class="order-status @pedido.Estado.ToString().ToLower()">
-                            @pedido.Estado
-                        </span>
-                    </header>
-
-                    <!-- Body -->
-                    <div class="order-body">
-
-                        <div class="order-items">
-                            @if (pedido.Items != null && pedido.Items.Any())
-                            {
-                                @foreach (var item in pedido.Items)
-                                {
-                                    <div class="order-item">
-                                        <span class="item-name">@item.Accesorio.Descripcion</span>
-                                        <span class="item-qty">x@item.Cantidad</span>
-                                        <span class="item-price">
-                                            Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
-                                        </span>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <p class="orders-empty">Pedido sin detalles.</p>
-                            }
-                        </div>
-
-                        <div class="order-total">
-                            <span>Total</span>
-                            <strong>Bs @pedido.PrecioTotal.ToString("F2")</strong>
-                        </div>
-
-                        @if (pedido.Estado != EstadoPedido.Cancelado &&
-                                        pedido.Estado != EstadoPedido.Entregado)
-                        {
-                            <button class="order-cancel"
-                                    @onclick="() => CancelarPedido(pedido.Id)">
-                                Cancelar pedido
-                            </button>
-                        }
-
-                    </div>
-                </article>
+                <div class="mp-stat @estado.ToString().ToLower() @(filtroEstado == estado ? "active" : "")"
+                     @onclick="() => CambiarFiltro(estado)">
+                    <span>@estado</span>
+                    <strong>@pedidos.Count(p => p.Estado == estado)</strong>
+                </div>
             }
+        </div>
+
+        <!-- LISTA DE PEDIDOS -->
+        @if (!pedidosFiltrados.Any())
+        {
+            <div class="mp-empty">
+                No tienes pedidos en esta categoría.
+            </div>
         }
         else
         {
-            <p class="orders-empty">No tiene pedidos registrados.</p>
+            @foreach (var pedido in pedidosFiltrados.OrderByDescending(p => p.Id))
+            {
+                <div class="mp-order-card">
+
+                    <div class="mp-order-header">
+                        <div>
+                            <h3>Pedido #@pedido.Id</h3>
+                            <span class="mp-status @pedido.Estado.ToString().ToLower()">
+                                @pedido.Estado
+                            </span>
+                        </div>
+
+                        <div class="mp-total">
+                            Bs @pedido.PrecioTotal.ToString("F2")
+                        </div>
+                    </div>
+
+                    <div class="mp-order-body">
+                        <p>@pedido.Items.Count artículo(s)</p>
+
+                        <button class="mp-btn"
+                                @onclick="() => pedidoSeleccionado = pedido">
+                            Ver detalles
+                        </button>
+                    </div>
+
+                </div>
+            }
         }
 
     </div>
 </section>
 
+<!-- MODAL DETALLE -->
+@if (pedidoSeleccionado != null)
+{
+    <div class="mp-modal-backdrop">
+        <div class="mp-modal">
+
+            <div class="mp-modal-header">
+                <h2>Pedido #@pedidoSeleccionado.Id</h2>
+                <button @onclick="CerrarModal">✖</button>
+            </div>
+
+            <div class="mp-modal-body">
+                @foreach (var item in pedidoSeleccionado.Items)
+                {
+                    <div class="mp-item">
+                        <span>@item.Accesorio.Descripcion</span>
+                        <span>x@item.Cantidad</span>
+                        <span>
+                            Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
+                        </span>
+                    </div>
+                }
+
+                <div class="mp-modal-total">
+                    Total: Bs @pedidoSeleccionado.PrecioTotal.ToString("F2")
+                </div>
+            </div>
+
+        </div>
+    </div>
+}
+
 @code {
 
-    // 🔥 IMPORTANTE: inicializada para evitar NullReference
     private List<PedidosComprasDto> pedidos = new();
+    private List<PedidosComprasDto> pedidosFiltrados = new();
 
-    private int userId;
+    private EstadoPedido? filtroEstado = null;
+    private PedidosComprasDto pedidoSeleccionado;
 
     protected override async Task OnInitializedAsync()
-    {
-        await ObtenerUsuarioId();
-        await CargarPedidos();
-    }
-
-    private async Task ObtenerUsuarioId()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (!user.Identity?.IsAuthenticated ?? true)
-            return;
+        var userId = int.Parse(user.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-
-        if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedUserId))
-        {
-            userId = parsedUserId;
-            Console.WriteLine($"Usuario autenticado. ID: {userId}");
-        }
-        else
-        {
-            Console.WriteLine("No se pudo obtener el ID del usuario.");
-        }
+        pedidos = await PedidosServicio.GetPedidosUsuario(userId);
+        AplicarFiltro();
     }
 
-    private async Task CargarPedidos()
+    private void CambiarFiltro(EstadoPedido? estado)
     {
-        try
-        {
-            Console.WriteLine($"Cargando pedidos del usuario {userId}");
-            var resultado = await PedidosServicio.GetPedidosUsuario(userId);
-
-            pedidos = resultado ?? new();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al cargar pedidos: {ex.Message}");
-            await JSRuntime.InvokeVoidAsync(
-                "alert",
-                "Ocurrió un error al cargar sus pedidos."
-            );
-        }
+        filtroEstado = estado;
+        AplicarFiltro();
     }
 
-    private async Task CancelarPedido(int pedidoId)
+    private void AplicarFiltro()
     {
-        try
-        {
-            var ok = await PedidosServicio.ActualizarEstadoPedido(
-                pedidoId,
-                EstadoPedido.Cancelado
-            );
+        pedidosFiltrados = filtroEstado == null
+            ? pedidos
+            : pedidos.Where(p => p.Estado == filtroEstado).ToList();
+    }
 
-            if (ok)
-            {
-                await JSRuntime.InvokeVoidAsync(
-                    "alert",
-                    "Pedido cancelado con éxito."
-                );
-
-                await CargarPedidos();
-            }
-            else
-            {
-                await JSRuntime.InvokeVoidAsync(
-                    "alert",
-                    "No se pudo cancelar el pedido."
-                );
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al cancelar pedido: {ex.Message}");
-            await JSRuntime.InvokeVoidAsync(
-                "alert",
-                "Error inesperado al cancelar el pedido."
-            );
-        }
+    private void CerrarModal()
+    {
+        pedidoSeleccionado = null;
     }
 }

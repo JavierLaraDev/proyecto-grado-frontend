@@ -2571,140 +2571,169 @@ section {
    PEDIDOS – REDISEÑO MODERNO
 ========================== */
 
-#orders {
-    background: #f6f7fb;
+#mp-pedidos {
+    padding: 110px 20px 40px;
+    background: linear-gradient(to bottom right, #f4f4f2, #ededf5);
     min-height: 100vh;
-    padding: 80px 20px;
 }
 
-.orders-wrapper {
-    max-width: 820px;
+.mp-container {
+    max-width: 1000px;
     margin: auto;
 }
 
-.orders-title {
-    font-size: 2.2rem;
-    font-weight: 800;
-    margin-bottom: 40px;
-    color: #1f2937;
+/* HEADER */
+.mp-header h1 {
+    font-size: 32px;
+    color: #4b0082;
 }
 
-/* Card */
-.order-card {
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0,0,0,.08);
-    margin-bottom: 32px;
-    overflow: hidden;
+.mp-header p {
+    color: #666;
+    margin-bottom: 30px;
 }
 
-/* Header */
-.order-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 26px;
-    background: linear-gradient(135deg, #f6c453, #f2994a);
-}
-
-.order-id {
-    font-weight: 700;
-    font-size: 1.1rem;
-}
-
-.order-sub {
-    display: block;
-    font-size: .85rem;
-    opacity: .8;
-}
-
-/* Status */
-.order-status {
-    padding: 6px 14px;
-    border-radius: 999px;
-    font-size: .75rem;
-    font-weight: 700;
-    letter-spacing: .5px;
-}
-
-.enproceso {
-    background: #fff3cd;
-    color: #7a5d00;
-}
-
-.entregado {
-    background: #d4edda;
-    color: #155724;
-}
-
-.cancelado {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-/* Body */
-.order-body {
-    padding: 26px;
-}
-
-/* Items */
-.order-items {
-    border-bottom: 1px solid #eee;
-    margin-bottom: 20px;
-}
-
-.order-item {
+/* STATS */
+.mp-stats {
     display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 14px;
-    padding: 14px 0;
-    font-size: .95rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 30px;
 }
 
-.item-name {
-    font-weight: 500;
-    color: #333;
-}
-
-.item-qty {
-    color: #6b7280;
-}
-
-.item-price {
-    font-weight: 600;
-}
-
-/* Total */
-.order-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #f4f6fa;
-    padding: 16px 20px;
+.mp-stat {
+    background: #fff;
+    padding: 16px;
     border-radius: 14px;
-    font-size: 1.2rem;
-    font-weight: 800;
-    margin-bottom: 20px;
-}
-
-/* Button */
-.order-cancel {
-    width: 100%;
-    padding: 14px;
-    border-radius: 14px;
-    border: none;
-    background: #ef4444;
-    color: #fff;
-    font-weight: 600;
+    text-align: center;
     cursor: pointer;
-    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,.12);
 }
 
-    .order-cancel:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(239,68,68,.35);
+    .mp-stat.active {
+        border: 2px solid #4b0082;
     }
 
+/* ORDER CARD */
+.mp-order-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
+}
+
+.mp-order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mp-status {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+    /* STATUS COLORS */
+    .mp-status.pendiente {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .mp-status.enproceso {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .mp-status.enviado {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .mp-status.entregado {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .mp-status.cancelado {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+.mp-total {
+    font-size: 20px;
+    font-weight: 700;
+    color: #4b0082;
+}
+
+.mp-order-body {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+}
+
+.mp-btn {
+    background: #4b0082;
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* MODAL */
+.mp-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.mp-modal {
+    background: #fff;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 18px;
+    box-shadow: 0 20px 45px rgba(0,0,0,.3);
+}
+
+.mp-modal-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid #eee;
+}
+
+.mp-modal-body {
+    padding: 22px;
+}
+
+.mp-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #ddd;
+}
+
+.mp-modal-total {
+    text-align: right;
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 18px;
+    color: #4b0082;
+}
+
+.mp-empty {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
 
 /*--------------------------------------------------------------
 # Footer
