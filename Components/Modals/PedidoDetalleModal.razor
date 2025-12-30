@@ -1,14 +1,17 @@
 ﻿@using PersonalizacionProyectoGradoWASM.Modelos
+
 @if (Pedido != null)
 {
     <div class="modal-backdrop-pedido">
         <div class="modal-card-pedido">
 
+            <!-- HEADER -->
             <div class="modal-header-pedido">
                 <h3>Detalles del Pedido #@Pedido.Id</h3>
-                <button class="modal-close-pedido" @onclick="OnCerrar">✖</button>
+                <button class="modal-close-pedido" @onclick="Cerrar">✖</button>
             </div>
 
+            <!-- BODY -->
             <div class="modal-body-pedido">
                 <p><strong>Fecha:</strong> @Pedido.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
                 <p><strong>Estado:</strong> @Pedido.Estado</p>
@@ -20,7 +23,7 @@
                         <tr>
                             <th>Accesorio</th>
                             <th>Cantidad</th>
-                            <th>Precio</th>
+                            <th>Precio Unitario</th>
                             <th>Subtotal</th>
                         </tr>
                     </thead>
@@ -31,7 +34,7 @@
                                 <td>@item.Accesorio.Descripcion</td>
                                 <td>@item.Cantidad</td>
                                 <td>Bs @item.Accesorio.Precio.ToString("F2")</td>
-                                <td>Bs @(item.Accesorio.Precio* item.Cantidad).ToString("F2")</td>
+                                <td>Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))</td>
                             </tr>
                         }
                     </tbody>
@@ -49,4 +52,9 @@
 @code {
     [Parameter] public PedidosComprasDto Pedido { get; set; }
     [Parameter] public EventCallback OnCerrar { get; set; }
+
+    private async Task Cerrar()
+    {
+        await OnCerrar.InvokeAsync();
+    }
 }
