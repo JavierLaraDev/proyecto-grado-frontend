@@ -202,7 +202,6 @@
 
     private async Task RealizarPedido()
     {
-        // ✅ VALIDACIÓN MEJORADA
         if (userId <= 0)
         {
             await JSRuntime.InvokeVoidAsync("alert", "Error: Usuario no identificado. Por favor, inicie sesión nuevamente.");
@@ -212,41 +211,35 @@
 
         try
         {
-            var pedido = new PedidosComprasDto
+            // ✅ USA PedidoCrearDto
+            var pedido = new PedidoCrearDto
             {
                 UsuarioId = userId,
                 PrecioTotal = precioTotal,
-                FechaCreacion = DateTime.Now,
-                Estado = EstadoPedido.Pendiente,
-                ColorBicicleta = colorBicicleta
+                ColorBicicleta = colorBicicleta,
+                Items = new List<PedidoItemCrearDto>()
             };
 
             Console.WriteLine($"🚀 Creando pedido para usuario ID: {userId}");
 
-            // ✅ AGREGAR BICICLETA BASE
+            // ✅ AGREGAR BICICLETA BASE - SOLO EL ID
             if (bicicletaBase != null)
             {
-                pedido.Items.Add(new PedidosItemsDto
+                pedido.Items.Add(new PedidoItemCrearDto
                 {
-                    Cantidad = 1,
-                    Accesorio = new Accesorio
-                    {
-                        Id = bicicletaBase.Id
-                    }
+                    AccesorioId = bicicletaBase.Id,
+                    Cantidad = 1
                 });
-                Console.WriteLine($"  - Bicicleta base: {bicicletaBase.Id}");
+                Console.WriteLine($"  - Bicicleta base ID: {bicicletaBase.Id}");
             }
 
-            // ✅ AGREGAR ACCESORIOS SELECCIONADOS
+            // ✅ AGREGAR ACCESORIOS SELECCIONADOS - SOLO LOS IDs
             foreach (var acc in accesoriosSeleccionados.Values)
             {
-                pedido.Items.Add(new PedidosItemsDto
+                pedido.Items.Add(new PedidoItemCrearDto
                 {
-                    Cantidad = 1,
-                    Accesorio = new Accesorio
-                    {
-                        Id = acc.Id
-                    }
+                    AccesorioId = acc.Id,
+                    Cantidad = 1
                 });
                 Console.WriteLine($"  - Accesorio: {acc.Descripcion} (ID: {acc.Id})");
             }

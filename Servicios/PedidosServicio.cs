@@ -14,12 +14,14 @@ namespace PersonalizacionProyectoGradoWASM.Servicios
             _cliente = cliente;
         }
 
+        // Servicios/PedidosServicio.cs - Método AgregarPedido
         public async Task<PedidosComprasDto> AgregarPedido(PedidoCrearDto pedido)
         {
             try
             {
                 Console.WriteLine("=".PadRight(60, '='));
                 Console.WriteLine("📤 DATOS QUE SE ENVIARÁN AL SERVIDOR:");
+                Console.WriteLine("=".PadRight(60, '='));
                 Console.WriteLine($"   UsuarioId: {pedido.UsuarioId}");
                 Console.WriteLine($"   PrecioTotal: {pedido.PrecioTotal}");
                 Console.WriteLine($"   ColorBicicleta: {pedido.ColorBicicleta}");
@@ -40,14 +42,20 @@ namespace PersonalizacionProyectoGradoWASM.Servicios
                     Formatting = Formatting.Indented
                 });
 
-                Console.WriteLine("📄 JSON:");
+                Console.WriteLine("📄 JSON QUE SE ENVIARÁ:");
                 Console.WriteLine(json);
+                Console.WriteLine("=".PadRight(60, '='));
 
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _cliente.PostAsync($"{Inicializar.UrlBaseApi}api/pedido", content);
+
+                var response = await _cliente.PostAsync(
+                    $"{Inicializar.UrlBaseApi}api/pedido",
+                    content
+                );
+
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                Console.WriteLine($"📥 RESPUESTA: {(int)response.StatusCode}");
+                Console.WriteLine($"📥 RESPUESTA: Status {(int)response.StatusCode}");
                 Console.WriteLine(responseContent);
 
                 if (response.IsSuccessStatusCode)
@@ -55,8 +63,20 @@ namespace PersonalizacionProyectoGradoWASM.Servicios
                     return JsonConvert.DeserializeObject<PedidosComprasDto>(responseContent);
                 }
 
-                var error = JsonConvert.DeserializeObject<ModeloError>(responseContent);
-                throw new Exception(error?.ErrorMessage ?? "Error desconocido del servidor");
+                try
+                {
+                    var error = JsonConvert.DeserializeObject<ModeloError>(responseContent);
+                    throw new Exception(error?.ErrorMessage ?? "Error desconocido del servidor");
+                }
+                catch (JsonException)
+                {
+                    throw new Exception("Error del servidor: " + responseContent);
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"❌ Error de conexión: {ex.Message}");
+                throw new Exception("No se pudo conectar con el servidor");
             }
             catch (Exception ex)
             {
