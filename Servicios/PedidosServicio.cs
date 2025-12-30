@@ -18,7 +18,48 @@ namespace PersonalizacionProyectoGradoWASM.Servicios
         {
             try
             {
-                var json = JsonConvert.SerializeObject(pedido);
+                // ✅ LOG: Ver estructura COMPLETA antes de serializar
+                Console.WriteLine("=".PadRight(60, '='));
+                Console.WriteLine("📤 DATOS QUE SE ENVIARÁN AL SERVIDOR:");
+                Console.WriteLine("=".PadRight(60, '='));
+                Console.WriteLine($"   UsuarioId: {pedido.UsuarioId}");
+                Console.WriteLine($"   PrecioTotal: {pedido.PrecioTotal}");
+                Console.WriteLine($"   Estado: {pedido.Estado}");
+                Console.WriteLine($"   ColorBicicleta: {pedido.ColorBicicleta}");
+                Console.WriteLine($"   FechaCreacion: {pedido.FechaCreacion}");
+                Console.WriteLine($"   Total Items: {pedido.Items?.Count ?? 0}");
+
+                if (pedido.Items != null)
+                {
+                    for (int i = 0; i < pedido.Items.Count; i++)
+                    {
+                        var item = pedido.Items[i];
+                        Console.WriteLine($"   Item {i}:");
+                        Console.WriteLine($"      - Cantidad: {item.Cantidad}");
+                        Console.WriteLine($"      - Accesorio es null?: {item.Accesorio == null}");
+                        if (item.Accesorio != null)
+                        {
+                            Console.WriteLine($"      - Accesorio.Id: {item.Accesorio.Id}");
+                            Console.WriteLine($"      - Accesorio.Nombre: {item.Accesorio.Nombre ?? "null"}");
+                            Console.WriteLine($"      - Accesorio.Descripcion: {item.Accesorio.Descripcion ?? "null"}");
+                        }
+                    }
+                }
+
+                // ✅ Serializar con configuración que muestre el JSON real
+                var json = JsonConvert.SerializeObject(pedido, new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore,
+                    Formatting = Formatting.Indented,
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                });
+
+                Console.WriteLine("=".PadRight(60, '='));
+                Console.WriteLine("📄 JSON QUE SE ENVIARÁ:");
+                Console.WriteLine("=".PadRight(60, '='));
+                Console.WriteLine(json);
+                Console.WriteLine("=".PadRight(60, '='));
+
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _cliente.PostAsync(
@@ -28,28 +69,45 @@ namespace PersonalizacionProyectoGradoWASM.Servicios
 
                 var responseContent = await response.Content.ReadAsStringAsync();
 
+                Console.WriteLine("=".PadRight(60, '='));
+                Console.WriteLine($"📥 RESPUESTA DEL SERVIDOR:");
+                Console.WriteLine("=".PadRight(60, '='));
+                Console.WriteLine($"   Status Code: {(int)response.StatusCode} ({response.StatusCode})");
+                Console.WriteLine($"   Content:");
+                Console.WriteLine(responseContent);
+                Console.WriteLine("=".PadRight(60, '='));
+
                 if (response.IsSuccessStatusCode)
                 {
                     return JsonConvert.DeserializeObject<PedidosComprasDto>(responseContent);
                 }
 
-                // ⬇️ MANEJO SEGURO DE ERROR
+                // ⬇️ MANEJO MEJORADO DE ERROR
                 try
                 {
                     var error = JsonConvert.DeserializeObject<ModeloError>(responseContent);
-                    throw new Exception(error?.ErrorMessage ?? "Error desconocido del servidor");
+                    var errorMsg = error?.ErrorMessage ?? "Error desconocido del servidor";
+                    Console.WriteLine($"❌ Error del servidor: {errorMsg}");
+                    throw new Exception(errorMsg);
                 }
                 catch (JsonException)
                 {
+                    Console.WriteLine($"❌ Respuesta no JSON del servidor");
                     throw new Exception("Error del servidor: " + responseContent);
                 }
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
+                Console.WriteLine($"❌ Error de conexión: {ex.Message}");
                 throw new Exception("No se pudo conectar con el servidor");
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error inesperado: {ex.Message}");
+                Console.WriteLine($"❌ StackTrace: {ex.StackTrace}");
+                throw;
+            }
         }
-
 
         public async Task<PedidosComprasDto> GetPedido(int pedidoId)
         {
@@ -161,6 +219,7 @@ namespace PersonalizacionProyectoGradoWASM.Servicios
                 throw;
             }
         }
+
         public async Task<List<PedidosComprasDto>> GetPedidosUsuario(int userId)
         {
             try
