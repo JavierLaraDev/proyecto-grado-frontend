@@ -12,14 +12,18 @@
         <nav id="navbar" class="navbar">
             <ul>
 
-                <!-- INICIO -->
-                <li>
-                    <NavLink href="/" class="nav-link" ActiveClass="active">
-                        Inicio
-                    </NavLink>
-                </li>
+               
 
                 <AuthorizeView Context="auth">
+                    <NotAuthorized>
+                        <!-- INICIO -->
+
+                        <li>
+                            <NavLink href="/" class="nav-link" ActiveClass="active">
+                                Inicio
+                            </NavLink>
+                        </li>
+                    </NotAuthorized>
                     <Authorized>
 
                         <!-- BIENVENIDA -->

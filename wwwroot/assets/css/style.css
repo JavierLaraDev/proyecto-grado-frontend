@@ -2568,12 +2568,13 @@ section {
         transform: translateY(-2px);
     }
 /* ===============================
-   CONTENEDOR
-   =============================== */
+   MIS PEDIDOS – MODERNO
+================================ */
+
 #mp-pedidos {
-    padding: 100px 20px 40px;
-    background: #f4f4f2;
+    background: #f8f9fb;
     min-height: 100vh;
+    padding: 80px 20px;
 }
 
 .mp-container {
@@ -2581,161 +2582,139 @@ section {
     margin: auto;
 }
 
-/* ===============================
-   TÍTULO
-   =============================== */
 .mp-title {
-    font-size: 28px;
+    font-size: 2rem;
     font-weight: 700;
-    color: #4b0082;
-    margin-bottom: 25px;
+    color: #2b2b2b;
+    margin-bottom: 40px;
 }
 
-/* ===============================
-   CARD
-   =============================== */
+/* Card */
 .mp-card {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    margin-bottom: 25px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    margin-bottom: 30px;
     overflow: hidden;
+    transition: transform .2s ease;
 }
 
-/* HEADER */
+    .mp-card:hover {
+        transform: translateY(-4px);
+    }
+
+/* Header */
 .mp-card-header {
-    background: #4b0082;
-    color: #fff;
-    padding: 14px 20px;
+    background: linear-gradient(135deg, #f2c94c, #f2994a);
+    color: #2b2b2b;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mp-order {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.mp-date {
+    font-size: .85rem;
+    opacity: .8;
+}
+
+/* Status badges */
+.mp-status {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: .8rem;
     font-weight: 600;
+    text-transform: uppercase;
 }
 
-/* BODY */
+.enproceso {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.cancelado {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.entregado {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* Body */
 .mp-card-body {
-    padding: 20px;
+    padding: 24px;
 }
 
-/* ===============================
-   ITEMS
-   =============================== */
-.mp-label {
-    font-size: 13px;
-    color: #777;
-    margin-bottom: 10px;
+.mp-subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #444;
 }
 
 .mp-items {
     list-style: none;
     padding: 0;
-    margin: 0 0 15px;
+    margin: 0 0 20px 0;
 }
 
 .mp-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dashed #ddd;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    font-size: .95rem;
 }
 
-.mp-item-name {
-    font-weight: 500;
-}
+    .mp-item strong {
+        color: #333;
+    }
 
-.mp-item-qty {
-    color: #666;
-}
-
-.mp-item-price {
-    font-weight: 600;
-    color: #4b0082;
-}
-
-/* ===============================
-   RESUMEN
-   =============================== */
-.mp-summary {
-    display: flex;
-    justify-content: space-between;
-    font-size: 18px;
-    font-weight: 700;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 2px solid #4b0082;
-}
-
-.mp-total {
-    color: #4b0082;
-}
-
-/* ===============================
-   FOOTER
-   =============================== */
-.mp-footer {
+/* Total */
+.mp-total-box {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 18px;
+    background: #f4f6fa;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
 }
 
-/* ===============================
-   ESTADO
-   =============================== */
-.mp-status {
-    padding: 4px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-    .mp-status.pendiente {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .mp-status.enproceso {
-        background: #cce5ff;
-        color: #004085;
-    }
-
-    .mp-status.enviado {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .mp-status.entregado {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .mp-status.cancelado {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-/* ===============================
-   BOTÓN
-   =============================== */
+/* Button */
 .mp-btn-cancel {
-    background: #dc3545;
-    color: #fff;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
     border: none;
-    padding: 6px 16px;
-    border-radius: 8px;
-    cursor: pointer;
+    background: #e63946;
+    color: white;
     font-weight: 600;
+    cursor: pointer;
+    transition: background .2s ease;
 }
 
     .mp-btn-cancel:hover {
-        background: #b02a37;
+        background: #c82333;
     }
 
-/* ===============================
-   EMPTY
-   =============================== */
+/* Empty */
 .mp-empty {
+    text-align: center;
     color: #777;
-    font-style: italic;
+    font-size: 1rem;
 }
+
 
 
 /*--------------------------------------------------------------

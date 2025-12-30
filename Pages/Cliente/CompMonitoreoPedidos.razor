@@ -9,50 +9,74 @@
 @inject IJSRuntime JSRuntime
 @attribute [Authorize(Roles = "1")]
 
-<section id="Pedidos">
-    <div class="monitoreo-pedidos-container">
-        <h2 class="pedidos-title">Mis Pedidos</h2>
+<section id="mp-pedidos">
+    <div class="mp-container">
+
+        <h2 class="mp-title">Mis pedidos</h2>
+
         @if (pedidos != null && pedidos.Any())
         {
             @foreach (var pedido in pedidos.OrderByDescending(p => p.Id))
             {
-                <div class="pedido-card">
-                    <div class="pedido-header">
-                        Pedido #@pedido.Id
-                    </div>
-                    <div class="pedido-body">
-                        <h5 class="pedido-section-title">Accesorios seleccionados:</h5>
-                        @if (pedido.Items != null && pedido.Items.Any())
+                <article class="mp-card">
+
+                    <!-- Header -->
+                    <header class="mp-card-header">
+                        <div>
+                            <span class="mp-order">Pedido #@pedido.Id</span>
+                            <span class="mp-date">Estado actual</span>
+                        </div>
+
+                        <span class="mp-status @pedido.Estado.ToString().ToLower()">
+                            @pedido.Estado
+                        </span>
+                    </header>
+
+                    <!-- Body -->
+                    <div class="mp-card-body">
+
+                        <h4 class="mp-subtitle">Accesorios</h4>
+
+                        <ul class="mp-items">
+                            @foreach (var item in pedido.Items)
+                            {
+                                <li class="mp-item">
+                                    <span>@item.Accesorio.Descripcion</span>
+                                    <span>x@item.Cantidad</span>
+                                    <strong>
+                                        Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
+                                    </strong>
+                                </li>
+                            }
+                        </ul>
+
+                        <div class="mp-total-box">
+                            <span>Total</span>
+                            <strong>Bs @pedido.PrecioTotal.ToString("F2")</strong>
+                        </div>
+
+                        @if (pedido.Estado != EstadoPedido.Cancelado &&
+                                        pedido.Estado != EstadoPedido.Entregado)
                         {
-                            <ul class="pedido-list">
-                                @foreach (var item in pedido.Items)
-                                {
-                                    <li class="pedido-list-item">@item.Accesorio.Descripcion - Cantidad: @item.Cantidad - Precio: $@(item.Accesorio.Precio * item.Cantidad)</li>
-                                }
-                            </ul>
-                        }
-                        else
-                        {
-                            <p>No se encontraron detalles para este pedido.</p>
+                            <button class="mp-btn-cancel"
+                                    @onclick="() => CancelarPedido(pedido.Id)">
+                                Cancelar pedido
+                            </button>
                         }
 
-                        <p class="pedido-total">Precio Total: $@pedido.PrecioTotal.ToString("F2")</p>
-                        <p class="pedido-estado">Estado del Pedido: @pedido.Estado.ToString()</p>
-
-                        @if (pedido.Estado != EstadoPedido.Cancelado && pedido.Estado != EstadoPedido.Entregado)
-                        {
-                            <button class="btn-cancelar" @onclick="() => CancelarPedido(pedido.Id)">Cancelar Pedido</button>
-                        }
                     </div>
-                </div>
+                </article>
             }
         }
         else
         {
-            <p class="no-pedidos">No se encontraron pedidos. Si crees que esto es un error, por favor, actualiza la página o contacta con soporte.</p>
+            <p class="mp-empty">No tiene pedidos registrados.</p>
         }
+
     </div>
 </section>
+
+
 @code {
     private List<PedidosComprasDto> pedidos;
     private int userId;
