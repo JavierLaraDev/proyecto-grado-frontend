@@ -9,73 +9,63 @@
 @inject IJSRuntime JSRuntime
 @attribute [Authorize(Roles = "1")]
 
-<section id="mp-pedidos">
-    <div class="mp-container">
+<section id="orders">
+    <div class="orders-wrapper">
 
-        <h2 class="mp-title">Mis pedidos</h2>
+        <h1 class="orders-title">Mis pedidos</h1>
 
-        @if (pedidos != null && pedidos.Any())
+        @foreach (var pedido in pedidos.OrderByDescending(p => p.Id))
         {
-            @foreach (var pedido in pedidos.OrderByDescending(p => p.Id))
-            {
-                <article class="mp-card">
+            <article class="order-card">
 
-                    <!-- Header -->
-                    <header class="mp-card-header">
-                        <div>
-                            <span class="mp-order">Pedido #@pedido.Id</span>
-                            <span class="mp-date">Estado actual</span>
-                        </div>
-
-                        <span class="mp-status @pedido.Estado.ToString().ToLower()">
-                            @pedido.Estado
-                        </span>
-                    </header>
-
-                    <!-- Body -->
-                    <div class="mp-card-body">
-
-                        <h4 class="mp-subtitle">Accesorios</h4>
-
-                        <ul class="mp-items">
-                            @foreach (var item in pedido.Items)
-                            {
-                                <li class="mp-item">
-                                    <span>@item.Accesorio.Descripcion</span>
-                                    <span>x@item.Cantidad</span>
-                                    <strong>
-                                        Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
-                                    </strong>
-                                </li>
-                            }
-                        </ul>
-
-                        <div class="mp-total-box">
-                            <span>Total</span>
-                            <strong>Bs @pedido.PrecioTotal.ToString("F2")</strong>
-                        </div>
-
-                        @if (pedido.Estado != EstadoPedido.Cancelado &&
-                                        pedido.Estado != EstadoPedido.Entregado)
-                        {
-                            <button class="mp-btn-cancel"
-                                    @onclick="() => CancelarPedido(pedido.Id)">
-                                Cancelar pedido
-                            </button>
-                        }
-
+                <!-- Header -->
+                <header class="order-header">
+                    <div>
+                        <span class="order-id">Pedido #@pedido.Id</span>
+                        <span class="order-sub">Seguimiento del pedido</span>
                     </div>
-                </article>
-            }
-        }
-        else
-        {
-            <p class="mp-empty">No tiene pedidos registrados.</p>
+
+                    <span class="order-status @pedido.Estado.ToString().ToLower()">
+                        @pedido.Estado
+                    </span>
+                </header>
+
+                <!-- Body -->
+                <div class="order-body">
+
+                    <div class="order-items">
+                        @foreach (var item in pedido.Items)
+                        {
+                            <div class="order-item">
+                                <span class="item-name">@item.Accesorio.Descripcion</span>
+                                <span class="item-qty">x@item.Cantidad</span>
+                                <span class="item-price">
+                                    Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="order-total">
+                        <span>Total</span>
+                        <strong>Bs @pedido.PrecioTotal.ToString("F2")</strong>
+                    </div>
+
+                    @if (pedido.Estado != EstadoPedido.Cancelado &&
+                                    pedido.Estado != EstadoPedido.Entregado)
+                    {
+                        <button class="order-cancel"
+                                @onclick="() => CancelarPedido(pedido.Id)">
+                            Cancelar pedido
+                        </button>
+                    }
+
+                </div>
+            </article>
         }
 
     </div>
 </section>
-
 
 @code {
     private List<PedidosComprasDto> pedidos;
