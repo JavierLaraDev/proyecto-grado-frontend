@@ -85,28 +85,53 @@
     <div class="mp-modal-backdrop">
         <div class="mp-modal">
 
+            <!-- HEADER -->
             <div class="mp-modal-header">
-                <h2>Pedido #@pedidoSeleccionado.Id</h2>
-                <button @onclick="CerrarModal">✖</button>
-            </div>
-
-            <div class="mp-modal-body">
-                @foreach (var item in pedidoSeleccionado.Items)
-                {
-                    <div class="mp-item">
-                        <span>@item.Accesorio.Descripcion</span>
-                        <span>x @item.Cantidad</span>
-                        <span>
-                            Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
-                        </span>
-                    </div>
-                }
-
-                <div class="mp-modal-total">
-                    Total: Bs @pedidoSeleccionado.PrecioTotal.ToString("F2")
+                <div>
+                    <h2>Pedido #@pedidoSeleccionado.Id</h2>
+                    <span class="mp-modal-sub">
+                        @pedidoSeleccionado.Items.Count artículo(s)
+                    </span>
                 </div>
+
+                <button class="mp-modal-close"
+                        @onclick="CerrarModal">
+                    ✕
+                </button>
             </div>
 
+            <!-- BODY -->
+            <div class="mp-modal-body">
+
+                <!-- LISTA -->
+                <div class="mp-modal-list">
+                    @foreach (var item in pedidoSeleccionado.Items)
+                    {
+                        <div class="mp-modal-row">
+                            <div class="mp-modal-item">
+                                @item.Accesorio.Descripcion
+                            </div>
+
+                            <div class="mp-modal-qty">
+                                x @item.Cantidad
+                            </div>
+
+                            <div class="mp-modal-price">
+                                Bs @((item.Accesorio.Precio * item.Cantidad).ToString("F2"))
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- TOTAL -->
+                <div class="mp-modal-footer">
+                    <span>Total</span>
+                    <strong>
+                        Bs @pedidoSeleccionado.PrecioTotal.ToString("F2")
+                    </strong>
+                </div>
+
+            </div>
         </div>
     </div>
 }

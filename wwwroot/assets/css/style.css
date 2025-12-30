@@ -2684,49 +2684,138 @@ section {
     font-weight: 600;
 }
 
-/* MODAL */
+/* ===============================
+   MODAL BACKDROP
+   =============================== */
 .mp-modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.65);
+    background: rgba(0,0,0,0.55);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 9999;
 }
 
+/* ===============================
+   MODAL CARD
+   =============================== */
 .mp-modal {
     background: #fff;
     width: 90%;
-    max-width: 600px;
+    max-width: 520px;
     border-radius: 18px;
-    box-shadow: 0 20px 45px rgba(0,0,0,.3);
+    box-shadow: 0 25px 60px rgba(0,0,0,.35);
+    animation: mpFadeIn 0.25s ease;
 }
 
+/* ===============================
+   HEADER
+   =============================== */
 .mp-modal-header {
     display: flex;
     justify-content: space-between;
-    padding: 18px 22px;
+    align-items: flex-start;
+    padding: 20px 24px;
     border-bottom: 1px solid #eee;
 }
 
-.mp-modal-body {
-    padding: 22px;
+    .mp-modal-header h2 {
+        margin: 0;
+        font-size: 22px;
+        color: #4b0082;
+    }
+
+.mp-modal-sub {
+    font-size: 13px;
+    color: #777;
 }
 
-.mp-item {
+/* CLOSE */
+.mp-modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #555;
+}
+
+    .mp-modal-close:hover {
+        color: #000;
+    }
+
+/* ===============================
+   BODY
+   =============================== */
+.mp-modal-body {
+    padding: 20px 24px;
+}
+
+/* ===============================
+   LISTA DE ITEMS
+   =============================== */
+.mp-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.mp-modal-row {
+    display: grid;
+    grid-template-columns: 1fr 60px 110px;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.mp-modal-item {
+    font-weight: 500;
+    color: #333;
+}
+
+.mp-modal-qty {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.mp-modal-price {
+    text-align: right;
+    font-weight: 600;
+    color: #4b0082;
+}
+
+/* ===============================
+   FOOTER / TOTAL
+   =============================== */
+.mp-modal-footer {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px dashed #ddd;
+    align-items: center;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 2px solid #4b0082;
+    font-size: 20px;
+    color: #4b0082;
 }
 
-.mp-modal-total {
-    text-align: right;
-    font-size: 22px;
-    font-weight: 700;
-    margin-top: 18px;
-    color: #4b0082;
+    .mp-modal-footer strong {
+        font-size: 22px;
+    }
+
+/* ===============================
+   ANIMACIÓN
+   =============================== */
+@keyframes mpFadeIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .mp-empty {
