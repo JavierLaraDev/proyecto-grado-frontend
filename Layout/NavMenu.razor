@@ -45,25 +45,37 @@
 
                         <AuthorizeView Roles="1">
                             <Authorized Context="clientContext">
+
                                 <li>
-                                    <NavLink href="bicicleta-personalizada" class="nav-link scrollto" ActiveClass="active">
-                                        Personalizar
+                                    <NavLink href="bicicleta-personalizada"
+                                             class="nav-link nav-client"
+                                             ActiveClass="active">
+                                        <i class="fas fa-bicycle"></i>
+                                        <span>Personalizar</span>
                                     </NavLink>
                                 </li>
 
                                 <li>
-                                    <NavLink href="miPerfil" class="nav-link scrollto" ActiveClass="active">
-                                        <i class="fas fa-user"></i>
-                                    </NavLink>
-                                </li>
-
-                                <li>
-                                    <NavLink href="MonitoreoPedidos" class="nav-link scrollto" ActiveClass="active">
+                                    <NavLink href="MonitoreoPedidos"
+                                             class="nav-link nav-client"
+                                             ActiveClass="active">
                                         <i class="fas fa-box"></i>
+                                        <span>Mis pedidos</span>
                                     </NavLink>
                                 </li>
+
+                                <li>
+                                    <NavLink href="miPerfil"
+                                             class="nav-link nav-client"
+                                             ActiveClass="active">
+                                        <i class="fas fa-user"></i>
+                                        <span>Mi perfil</span>
+                                    </NavLink>
+                                </li>
+
                             </Authorized>
                         </AuthorizeView>
+
 
                         <li>
                             <NavLink href="salir" class="getstarted scrollto">
