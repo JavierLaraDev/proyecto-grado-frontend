@@ -113,7 +113,7 @@ h6 {
     position: fixed;
     top: 0;
     width: 100%;
-    z-index: 997;
+    z-index: 2000;
     padding: 10px 0;
     background: #E1AE47;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -243,24 +243,29 @@ h6 {
     font-size: 28px;
     cursor: pointer;
     color: #4B0082;
+    position: relative;
+    z-index: 2100;
 }
 
 @media (max-width: 991px) {
+
     .mobile-nav-toggle {
         display: block;
     }
 
-    .navbar ul {
+    /* OCULTAR SOLO EL UL DEL HEADER */
+    #header .navbar ul {
         display: none;
     }
 
-    .navbar-mobile {
+    #header .navbar.navbar-mobile {
         position: fixed;
         inset: 0;
         background: rgba(48,47,84,0.9);
+        z-index: 2000;
     }
 
-        .navbar-mobile ul {
+        #header .navbar.navbar-mobile ul {
             display: block;
             position: absolute;
             inset: 60px 20px 20px 20px;
@@ -269,11 +274,12 @@ h6 {
             padding: 20px;
         }
 
-        .navbar-mobile a {
+        #header .navbar.navbar-mobile a {
             color: #4B0082;
             padding: 10px;
         }
 }
+
 
 /*--------------------------------------------------------------
 # HERO – Rediseño Home

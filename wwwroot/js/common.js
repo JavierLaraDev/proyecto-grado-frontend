@@ -342,7 +342,7 @@ window.actualizarModeloBicicleta = function (accesorios) {
                                         accesorioMesh.position = new BABYLON.Vector3(0, 0.9, 0);
                                         break;
                                     case "Negro":
-                                        accesorioMesh.position = new BABYLON.Vector3(0, 1, 0.1);
+                                        accesorioMesh.position = new BABYLON.Vector3(0,-7, 0.1);
                                         break;
                                 }
                                 accesorioMesh.rotation = new BABYLON.Vector3(0, 0, 0);

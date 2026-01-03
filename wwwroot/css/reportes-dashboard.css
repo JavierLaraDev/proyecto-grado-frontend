@@ -1,5 +1,5 @@
 ﻿/* ======================================================
-   DASHBOARD REPORTES – ESTILO FINAL
+   DASHBOARD REPORTES – ESTILO BASE
    ====================================================== */
 
 .dashboard {
@@ -7,7 +7,10 @@
     background: #f5f6f8;
 }
 
-/* ---------- HEADER ---------- */
+/* ======================================================
+   HEADER
+   ====================================================== */
+
 .dashboard-header {
     margin-bottom: 30px;
 }
@@ -24,7 +27,10 @@
         color: #6b7280;
     }
 
-/* ---------- FILTROS ---------- */
+/* ======================================================
+   FILTROS
+   ====================================================== */
+
 .dashboard-filters {
     display: flex;
     align-items: flex-end;
@@ -68,7 +74,10 @@
             background: #fff;
         }
 
-/* ---------- KPIs ---------- */
+/* ======================================================
+   KPIs
+   ====================================================== */
+
 .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -119,7 +128,10 @@
         border-left: 6px solid #f59e0b;
     }
 
-/* ---------- CHARTS ---------- */
+/* ======================================================
+   CHARTS
+   ====================================================== */
+
 .charts-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -141,12 +153,14 @@
         margin-bottom: 18px;
     }
 
-    /* Canvas mejor centrado */
     .chart-card canvas {
         max-height: 280px;
     }
 
-/* ---------- TABLA ---------- */
+/* ======================================================
+   TABLA
+   ====================================================== */
+
 .table {
     background: #ffffff;
     border-radius: 18px;
@@ -175,7 +189,10 @@
         background: #f9fafb;
     }
 
-/* ---------- BOTÓN ---------- */
+/* ======================================================
+   BOTONES
+   ====================================================== */
+
 .btn-primary {
     background: #e3b34b;
     border: none;
@@ -188,20 +205,98 @@
     .btn-primary:hover {
         background: #d4a63f;
     }
+
 /* FIX gráfico Estado de Pedidos */
 #estadoPedidosChart {
     height: 260px !important;
     width: 100% !important;
 }
 
+/* ======================================================
+   RESPONSIVE – TABLET
+   ====================================================== */
 
-/* ---------- RESPONSIVE ---------- */
 @media (max-width: 992px) {
+
     .charts-grid {
         grid-template-columns: 1fr;
     }
 
-    .dashboard {
-        padding: 25px;
+    .dashboard-filters {
+        flex-wrap: wrap;
+        gap: 16px;
     }
+
+    .dashboard {
+        padding: 30px;
+    }
+}
+
+/* ======================================================
+   RESPONSIVE – MOBILE REAL
+   ====================================================== */
+
+@media (max-width: 768px) {
+
+    /* Header */
+    .dashboard-header h1 {
+        font-size: 26px;
+    }
+
+    .dashboard-header p {
+        font-size: 14px;
+    }
+
+    /* Dashboard */
+    .dashboard {
+        padding: 20px;
+    }
+
+    /* Filtros */
+    .dashboard-filters {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 18px;
+    }
+
+        .dashboard-filters > div {
+            min-width: 100%;
+        }
+
+    /* KPIs */
+    .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .kpi-card {
+        padding: 18px;
+    }
+
+        .kpi-card strong {
+            font-size: 26px;
+        }
+
+    /* Charts */
+    .chart-card {
+        padding: 18px;
+    }
+
+        .chart-card canvas {
+            max-height: 220px;
+        }
+
+    /* Tabla */
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        border-radius: 14px;
+    }
+
+        .table thead {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
 }

@@ -9,26 +9,37 @@
         </NavLink>
 
         <!-- NAV -->
-        <nav id="navbar" class="navbar">
+        <nav id="navbar" class="@NavBarClass">
             <ul>
 
-               
-
                 <AuthorizeView Context="auth">
-                    <NotAuthorized>
-                        <!-- INICIO -->
 
+                    <!-- NO AUTORIZADO -->
+                    <NotAuthorized>
                         <li>
-                            <NavLink href="/" class="nav-link" ActiveClass="active">
+                            <NavLink href="/" class="nav-link" ActiveClass="active" @onclick="CerrarMenu">
                                 Inicio
                             </NavLink>
                         </li>
+
+                        <li>
+                            <NavLink href="Acceder" class="nav-link" ActiveClass="active" @onclick="CerrarMenu">
+                                Acceder
+                            </NavLink>
+                        </li>
+
+                        <li>
+                            <NavLink href="registro" class="nav-link" ActiveClass="active" @onclick="CerrarMenu">
+                                Registrarse
+                            </NavLink>
+                        </li>
                     </NotAuthorized>
+
+                    <!-- AUTORIZADO -->
                     <Authorized>
 
-                        <!-- BIENVENIDA -->
                         <li class="welcome">
-                            Hola, @auth.User.Identity.Name
+                            Hola, @auth.User.Identity?.Name
                         </li>
 
                         @* ================= ADMIN ================= *@
@@ -37,25 +48,25 @@
                             <li class="nav-divider"></li>
 
                             <li>
-                                <NavLink href="usuarios" class="nav-link" ActiveClass="active">
+                                <NavLink href="usuarios" class="nav-link" ActiveClass="active" @onclick="CerrarMenu">
                                     Usuarios
                                 </NavLink>
                             </li>
 
                             <li>
-                                <NavLink href="accesorios" class="nav-link" ActiveClass="active">
+                                <NavLink href="accesorios" class="nav-link" ActiveClass="active" @onclick="CerrarMenu">
                                     Accesorios
                                 </NavLink>
                             </li>
 
                             <li>
-                                <NavLink href="pedidos" class="nav-link" ActiveClass="active">
+                                <NavLink href="pedidos" class="nav-link" ActiveClass="active" @onclick="CerrarMenu">
                                     Pedidos
                                 </NavLink>
                             </li>
 
                             <li>
-                                <NavLink href="reportes" class="nav-link" ActiveClass="active">
+                                <NavLink href="reportes" class="nav-link" ActiveClass="active" @onclick="CerrarMenu">
                                     Reportes
                                 </NavLink>
                             </li>
@@ -69,7 +80,8 @@
                             <li>
                                 <NavLink href="bicicleta-personalizada"
                                          class="nav-link nav-client nav-cta"
-                                         ActiveClass="active">
+                                         ActiveClass="active"
+                                         @onclick="CerrarMenu">
                                     <i class="fas fa-bicycle"></i>
                                     Personalizar
                                 </NavLink>
@@ -78,7 +90,8 @@
                             <li>
                                 <NavLink href="MonitoreoPedidos"
                                          class="nav-link nav-client"
-                                         ActiveClass="active">
+                                         ActiveClass="active"
+                                         @onclick="CerrarMenu">
                                     <i class="fas fa-box"></i>
                                     Mis pedidos
                                 </NavLink>
@@ -87,51 +100,53 @@
                             <li>
                                 <NavLink href="miPerfil"
                                          class="nav-link nav-client"
-                                         ActiveClass="active">
+                                         ActiveClass="active"
+                                         @onclick="CerrarMenu">
                                     <i class="fas fa-user"></i>
                                     Mi perfil
                                 </NavLink>
                             </li>
                         }
 
-                        <!-- SALIR -->
                         <li class="nav-divider"></li>
 
                         <li>
-                            <NavLink href="salir" class="getstarted">
+                            <NavLink href="salir" class="getstarted" @onclick="CerrarMenu">
                                 Salir
                             </NavLink>
                         </li>
 
                     </Authorized>
 
-                    <NotAuthorized>
-
-                        <li>
-                            <NavLink href="Acceder" class="nav-link" ActiveClass="active">
-                                Acceder
-                            </NavLink>
-                        </li>
-
-                        <li>
-                            <NavLink href="registro" class="nav-link" ActiveClass="active">
-                                Registrarse
-                            </NavLink>
-                        </li>
-
-                    </NotAuthorized>
                 </AuthorizeView>
 
             </ul>
 
-            <!-- MOBILE -->
-            <i class="bi bi-list mobile-nav-toggle"></i>
+            <!-- TOGGLE MOBILE -->
+            <i class="@ToggleIconClass mobile-nav-toggle"
+               @onclick="ToggleMenu">
+            </i>
         </nav>
 
     </div>
 </header>
 
-
 @code {
+    private bool menuAbierto = false;
 
+    private string NavBarClass =>
+        menuAbierto ? "navbar navbar-mobile" : "navbar";
+
+    private string ToggleIconClass =>
+        menuAbierto ? "bi bi-x" : "bi bi-list";
+
+    private void ToggleMenu()
+    {
+        menuAbierto = !menuAbierto;
+    }
+
+    private void CerrarMenu()
+    {
+        menuAbierto = false;
+    }
 }
