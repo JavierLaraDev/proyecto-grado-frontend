@@ -1,5 +1,14 @@
-﻿<div class="charts-grid">
+﻿@inject IJSRuntime JS
 
+<div class="charts-grid">
+
+    <!-- Gráfico de Ganancias -->
+    <div class="chart-card">
+        <h3>Ganancias</h3>
+        <canvas id="gananciasChart"></canvas>
+    </div>
+
+    <!-- Gráfico de Estados -->
     <div class="chart-card">
         <h3>Estado de Pedidos</h3>
         <canvas id="estadoPedidosChart"></canvas>
@@ -8,24 +17,39 @@
 </div>
 
 @code {
-    [Inject] IJSRuntime JS { get; set; }
-
     [Parameter] public int PedidosPendientes { get; set; }
     [Parameter] public int PedidosProceso { get; set; }
     [Parameter] public int PedidosEnviados { get; set; }
     [Parameter] public int PedidosEntregados { get; set; }
     [Parameter] public int PedidosCancelados { get; set; }
 
+    // 🔹 Datos simulados (luego los conecta a datos reales)
+    private string[] meses =
+        { "Ene", "Feb", "Mar", "Abr", "May", "Jun" };
+
+    private double[] ganancias =
+        { 1200, 1800, 1500, 2200, 2600, 3100 };
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JS.InvokeVoidAsync("crearGraficoPedidos",
+            // Donut estados
+            await JS.InvokeVoidAsync(
+                "crearEstadoPedidos",
                 PedidosPendientes,
                 PedidosProceso,
                 PedidosEnviados,
                 PedidosEntregados,
-                PedidosCancelados);
+                PedidosCancelados
+            );
+
+            // Línea ganancias
+            await JS.InvokeVoidAsync(
+                "crearGananciasChart",
+                meses,
+                ganancias
+            );
         }
     }
 }

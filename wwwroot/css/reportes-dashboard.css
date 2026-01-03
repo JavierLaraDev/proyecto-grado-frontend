@@ -1,0 +1,207 @@
+﻿/* ======================================================
+   DASHBOARD REPORTES – ESTILO FINAL
+   ====================================================== */
+
+.dashboard {
+    padding: 40px;
+    background: #f5f6f8;
+}
+
+/* ---------- HEADER ---------- */
+.dashboard-header {
+    margin-bottom: 30px;
+}
+
+    .dashboard-header h1 {
+        font-size: 34px;
+        font-weight: 800;
+        color: #4b0082;
+        margin-bottom: 6px;
+    }
+
+    .dashboard-header p {
+        font-size: 15px;
+        color: #6b7280;
+    }
+
+/* ---------- FILTROS ---------- */
+.dashboard-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    background: #ffffff;
+    padding: 22px 26px;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(0,0,0,.08);
+    margin-bottom: 30px;
+}
+
+    .dashboard-filters > div {
+        display: flex;
+        flex-direction: column;
+        min-width: 160px;
+    }
+
+    .dashboard-filters label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .dashboard-filters input,
+    .dashboard-filters select {
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        background: #f9fafb;
+    }
+
+        .dashboard-filters input:focus,
+        .dashboard-filters select:focus {
+            outline: none;
+            border-color: #4b0082;
+            box-shadow: 0 0 0 3px rgba(75,0,130,.12);
+            background: #fff;
+        }
+
+/* ---------- KPIs ---------- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin-bottom: 35px;
+}
+
+.kpi-card {
+    background: #ffffff;
+    padding: 26px 28px;
+    border-radius: 18px;
+    box-shadow: 0 15px 40px rgba(0,0,0,.08);
+    position: relative;
+    overflow: hidden;
+}
+
+    .kpi-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.04;
+        background: linear-gradient(135deg, #000, transparent);
+    }
+
+    .kpi-card span {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .kpi-card strong {
+        font-size: 32px;
+        font-weight: 800;
+        color: #111827;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .kpi-card.blue {
+        border-left: 6px solid #3b82f6;
+    }
+
+    .kpi-card.green {
+        border-left: 6px solid #10b981;
+    }
+
+    .kpi-card.orange {
+        border-left: 6px solid #f59e0b;
+    }
+
+/* ---------- CHARTS ---------- */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 26px;
+    margin-bottom: 35px;
+}
+
+.chart-card {
+    background: #ffffff;
+    padding: 26px 28px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0,0,0,.08);
+}
+
+    .chart-card h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #4b0082;
+        margin-bottom: 18px;
+    }
+
+    /* Canvas mejor centrado */
+    .chart-card canvas {
+        max-height: 280px;
+    }
+
+/* ---------- TABLA ---------- */
+.table {
+    background: #ffffff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,.08);
+}
+
+    .table thead {
+        background: #fdf6e3;
+    }
+
+    .table th {
+        font-size: 13px;
+        font-weight: 700;
+        color: #4b0082;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .table td {
+        font-size: 14px;
+        color: #374151;
+    }
+
+    .table tbody tr:hover {
+        background: #f9fafb;
+    }
+
+/* ---------- BOTÓN ---------- */
+.btn-primary {
+    background: #e3b34b;
+    border: none;
+    color: #2b2b2b;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 6px 16px;
+}
+
+    .btn-primary:hover {
+        background: #d4a63f;
+    }
+/* FIX gráfico Estado de Pedidos */
+#estadoPedidosChart {
+    height: 260px !important;
+    width: 100% !important;
+}
+
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 992px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard {
+        padding: 25px;
+    }
+}

@@ -3360,21 +3360,3 @@ section {
 .chart-wrapper {
     height: 280px;
 }
-/*DASHBOARD DE REPORTES*/
-
-.dashboard-header h1 {
-    font-size: 2rem;
-    font-weight: 700;
-}
-
-.dashboard-header p {
-    color: #6b7280;
-}
-.dashboard-filters {
-    display: flex;
-    gap: 20px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,.05);
-}
