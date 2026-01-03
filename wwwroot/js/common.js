@@ -506,3 +506,24 @@ function createScene() {
 }
 
 console.log("Funciones de modelo 3D cargadas correctamente.");
+
+window.crearGananciasChart = (labels, data) => {
+    new Chart(document.getElementById('gananciasChart'), {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Ganancias',
+                data,
+                borderColor: '#10b981',
+                fill: false
+            }]
+        }
+    });
+};
+window.crearEstadoPedidos = (data) => {
+    new Chart(document.getElementById('estadoPedidosChart'), {
+        type: 'doughnut',
+        data
+    });
+};

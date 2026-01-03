@@ -1,8 +1,9 @@
-﻿@page "/reporte"
+﻿@page "/reportes"
 @attribute [Authorize(Roles = "0")]
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using OfficeOpenXml
+@using PersonalizacionProyectoGradoWASM.Components.Reportes
 @using PersonalizacionProyectoGradoWASM.Servicios
 @using PersonalizacionProyectoGradoWASM.Modelos
 @using PersonalizacionProyectoGradoWASM.Servicios.IServicios
@@ -13,538 +14,107 @@
 @inject IUsuariosServicio UsuariosServicio
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IJSRuntime JSRuntime
-<section class="users-page">
 
-    <!-- Header -->
-    <div class="users-header">
-        <h1>Reportes Administrativos</h1>
-    </div>
+<section class="dashboard">
 
-    <!-- KPIs -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="users-kpi">
-                <span class="kpi-title">Total de Pedidos</span>
-                <span class="kpi-value">@totalPedidos</span>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="users-kpi">
-                <span class="kpi-title">Total de Usuarios</span>
-                <span class="kpi-value">@totalUsuarios</span>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="users-kpi highlight">
-                <span class="kpi-title">Ganancias</span>
-                <span class="kpi-value">Bs @gananciasTotales.ToString("F2")</span>
-            </div>
-        </div>
-    </div>
+    <header class="dashboard-header">
+        <h1>Dashboard de Reportes</h1>
+        <p>Análisis completo del negocio</p>
+    </header>
 
-    <!-- Estado + Gráfico -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="users-card">
-                <h3>Estado de Pedidos</h3>
-                <ul class="estado-list">
-                    <li>Pendientes <span>@pedidosPendientes</span></li>
-                    <li>En Proceso <span>@pedidosEnProceso</span></li>
-                    <li>Enviados <span>@pedidosEnviados</span></li>
-                    <li>Entregados <span>@pedidosEntregados</span></li>
-                    <li>Cancelados <span>@pedidosCancelados</span></li>
-                </ul>
-            </div>
-        </div>
+    <ReportesFiltros 
+        Periodo="@periodo"
+        PeriodoChanged="@(p => periodo = p)"
+        Mes="@mes"
+        MesChanged="@(m => mes = m)"
+        Anio="@anio"
+        AnioChanged="@(a => anio = a)" />
 
-        <div class="col-md-6">
-            <div class="users-card">
-                <h3>Distribución de Pedidos</h3>
-                <div class="chart-wrapper">
-                    <canvas id="pedidosChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+    <ReportesKPIs 
+        TotalPedidos="@totalPedidos"
+        TotalUsuarios="@totalUsuarios"
+        Ganancias="@gananciasTotales" />
 
-    <!-- Reportes -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="users-card">
-                <h3>Reporte Mensual</h3>
+    <ReportesGraficos 
+        PedidosPendientes="@pedidosPendientes"
+        PedidosProceso="@pedidosEnProceso"
+        PedidosEnviados="@pedidosEnviados"
+        PedidosEntregados="@pedidosEntregados"
+        PedidosCancelados="@pedidosCancelados" />
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label>Fecha Inicio</label>
-                        <input type="date" class="users-input" @bind="fechaInicio" />
-                    </div>
-                    <div class="col-md-6">
-                        <label>Fecha Fin</label>
-                        <input type="date" class="users-input" @bind="fechaFin" />
-                    </div>
-                </div>
-
-                <button class="users-btn-primary mt-3"
-                        @onclick="GenerarReporteMensual">
-                    Generar Reporte
-                </button>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="users-card">
-                <h3>Reporte Anual</h3>
-
-                <label>Año</label>
-                <input type="number" class="users-input" @bind="anioSeleccionado" />
-
-                <button class="users-btn-primary mt-3"
-                        @onclick="GenerarReporteAnual">
-                    Generar Reporte
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tabla -->
-    <div class="users-table-wrapper">
-        <table class="users-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Usuario</th>
-                    <th>Fecha</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                    <th class="col-actions">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var pedido in pedidos)
-                {
-                    <tr>
-                        <td>@pedido.Id</td>
-                        <td>@pedido.UsuarioId</td>
-                        <td>@pedido.FechaCreacion.ToShortDateString()</td>
-                        <td>Bs @pedido.PrecioTotal.ToString("F2")</td>
-                        <td>
-                            <span class="pedido-estado @pedido.Estado.ToString().ToLower()">
-                                @pedido.Estado
-                            </span>
-                        </td>
-                        <td class="col-actions">
-                            <button class="users-btn-edit"
-                                    @onclick="() => VerDetallesPedido(pedido.Id)">
-                                Detalles
-                            </button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <ReportesTabla 
+        Pedidos="@pedidos"
+        OnVerDetalle="VerDetallesPedido" />
 
 </section>
 
-
 @if (pedidoSeleccionado != null)
 {
-    <div class="modal" tabindex="-1" style="display:block" role="dialog">
-        <div class="modal-dialog" role="document">
+    <div class="modal show d-block">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Pedido #@pedidoSeleccionado.Id</h5>
-                    <button type="button" class="close" @onclick="CerrarModal">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5>Pedido #@pedidoSeleccionado.Id</h5>
+                    <button class="btn-close" @onclick="CerrarModal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Usuario ID: @pedidoSeleccionado.UsuarioId</p>
-                    <p>Fecha: @pedidoSeleccionado.FechaCreacion.ToShortDateString()</p>
-                    <p>Estado: @pedidoSeleccionado.Estado</p>
-                    <h6>Items:</h6>
+                    <p><b>Usuario:</b> @pedidoSeleccionado.UsuarioId</p>
+                    <p><b>Fecha:</b> @pedidoSeleccionado.FechaCreacion</p>
+                    <p><b>Estado:</b> @pedidoSeleccionado.Estado</p>
+                    <hr />
                     <ul>
                         @foreach (var item in pedidoSeleccionado.Items)
                         {
-                            <li>@item.Accesorio.Descripcion - Cantidad: @item.Cantidad - Precio: Bs. @(item.Accesorio.Precio * item.Cantidad)</li>
+                            <li>@item.Accesorio.Nombre - Bs @item.Accesorio.Precio</li>
                         }
                     </ul>
-                    <p>Total: Bs. @pedidoSeleccionado.PrecioTotal.ToString("F2")</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CerrarModal">Cerrar</button>
+                    <hr />
+                    <b>Total: Bs @pedidoSeleccionado.PrecioTotal</b>
                 </div>
             </div>
         </div>
     </div>
 }
+
 @code {
-    private List<PedidosComprasDto> pedidos = new List<PedidosComprasDto>();
+
+    private List<PedidosComprasDto> pedidos = new();
+    private PedidosComprasDto pedidoSeleccionado;
+
+    private string periodo = "mensual";
+    private int mes = DateTime.Today.Month;
+    private int anio = DateTime.Today.Year;
+
     private int totalPedidos;
     private int totalUsuarios;
     private double gananciasTotales;
+
     private int pedidosPendientes;
     private int pedidosEnProceso;
     private int pedidosEnviados;
     private int pedidosEntregados;
     private int pedidosCancelados;
-    private PedidosComprasDto pedidoSeleccionado;
-    private DateTime fechaInicio = DateTime.Today.AddMonths(-1);
-    private DateTime fechaFin = DateTime.Today;
-    private int anioSeleccionado = DateTime.Today.Year;
-    private Reporte reporteMensual;
-    private Reporte reporteAnual;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarDatos();
+        pedidos = await CarritoComprasServicio.GetPedidos();
+        totalPedidos = pedidos.Count;
+        gananciasTotales = pedidos.Where(p => p.Estado == EstadoPedido.Entregado)
+                                  .Sum(p => p.PrecioTotal);
+
+        pedidosPendientes = pedidos.Count(p => p.Estado == EstadoPedido.Pendiente);
+        pedidosEnProceso = pedidos.Count(p => p.Estado == EstadoPedido.EnProceso);
+        pedidosEnviados = pedidos.Count(p => p.Estado == EstadoPedido.Enviado);
+        pedidosEntregados = pedidos.Count(p => p.Estado == EstadoPedido.Entregado);
+        pedidosCancelados = pedidos.Count(p => p.Estado == EstadoPedido.Cancelado);
+
+        totalUsuarios = (await UsuariosServicio.GetUsuarios()).Count();
     }
 
-    private async Task CargarDatos()
+    void VerDetallesPedido(int id)
     {
-        try
-        {
-            Console.WriteLine("Iniciando CargarDatos()");
-
-            // Cargar pedidos
-            pedidos = await CarritoComprasServicio.GetPedidos();
-            Console.WriteLine($"Total de pedidos cargados: {pedidos.Count}");
-
-            // Calcular estadísticas generales
-            totalPedidos = pedidos.Count;
-            gananciasTotales = CalcularGananciasTotales(pedidos);
-            Console.WriteLine($"Total de pedidos: {totalPedidos}, Ganancias totales: {gananciasTotales:F2}");
-
-            // Contar pedidos por estado
-            pedidosPendientes = pedidos.Count(p => p.Estado == EstadoPedido.Pendiente);
-            pedidosEnProceso = pedidos.Count(p => p.Estado == EstadoPedido.EnProceso);
-            pedidosEnviados = pedidos.Count(p => p.Estado == EstadoPedido.Enviado);
-            pedidosEntregados = pedidos.Count(p => p.Estado == EstadoPedido.Entregado);
-            pedidosCancelados = pedidos.Count(p => p.Estado == EstadoPedido.Cancelado);
-
-            Console.WriteLine($"Pendientes: {pedidosPendientes}, En Proceso: {pedidosEnProceso}, Enviados: {pedidosEnviados}, Entregados: {pedidosEntregados}, Cancelados: {pedidosCancelados}");
-
-            // Cargar usuarios
-            var usuarios = await UsuariosServicio.GetUsuarios();
-            totalUsuarios = usuarios.Count();
-            Console.WriteLine($"Total de usuarios: {totalUsuarios}");
-
-            // Verificar detalles de los pedidos
-            foreach (var pedido in pedidos)
-            {
-                Console.WriteLine($"Pedido ID: {pedido.Id}, Estado: {pedido.Estado}, Fecha: {pedido.FechaCreacion}, Total: {pedido.PrecioTotal:F2}, Items: {pedido.Items?.Count ?? 0}");
-                if (pedido.Items != null)
-                {
-                    foreach (var item in pedido.Items)
-                    {
-                        // ✅ CAMBIO: Usar item.Accesorio.Id en lugar de item.AccesorioId
-                        var accesorioId = item.Accesorio?.Id ?? 0;
-                        Console.WriteLine($"  - Item: AccesorioId: {accesorioId}, Nombre: {item.Accesorio?.Nombre ?? "N/A"}, Descripción: {item.Accesorio?.Descripcion ?? "N/A"}, Cantidad: {item.Cantidad}, Precio: {item.Accesorio?.Precio ?? 0:F2}, Costo: {item.Accesorio?.Costo ?? 0:F2}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("  - No hay items en este pedido");
-                }
-            }
-
-            // Verificar cálculo de accesorios vendidos
-            var todosLosAccesoriosVendidos = CalcularAccesoriosVendidos(pedidos);
-            Console.WriteLine("Todos los accesorios vendidos:");
-            foreach (var kvp in todosLosAccesoriosVendidos)
-            {
-                Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
-            }
-
-            Console.WriteLine("CargarDatos() completado");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error en CargarDatos(): {ex.Message}");
-            Console.WriteLine($"StackTrace: {ex.StackTrace}");
-            await JSRuntime.InvokeVoidAsync("alert", $"Error al cargar los datos: {ex.Message}");
-        }
+        pedidoSeleccionado = pedidos.First(x => x.Id == id);
     }
 
-    private double CalcularGananciasTotales(List<PedidosComprasDto> pedidosLista)
-    {
-        double ganancias = 0;
-
-        foreach (var pedido in pedidosLista.Where(p => p.Estado == EstadoPedido.Entregado))
-        {
-            // Sumamos el precio total del pedido
-            ganancias += pedido.PrecioTotal;
-
-            // Restamos el costo de todos los accesorios
-            if (pedido.Items != null)
-            {
-                foreach (var item in pedido.Items)
-                {
-                    if (item.Accesorio != null)
-                    {
-                        ganancias -= item.Accesorio.Costo * item.Cantidad;
-                    }
-                }
-            }
-        }
-
-        return ganancias;
-    }
-
-    private void VerDetallesPedido(int pedidoId)
-    {
-        pedidoSeleccionado = pedidos.FirstOrDefault(p => p.Id == pedidoId);
-    }
-
-    private void CerrarModal()
-    {
-        pedidoSeleccionado = null;
-    }
-
-    private async Task GenerarReporteMensual()
-    {
-        var pedidosFiltrados = pedidos.Where(p => p.FechaCreacion >= fechaInicio && p.FechaCreacion <= fechaFin).ToList();
-
-        Console.WriteLine($"Pedidos filtrados: {pedidosFiltrados.Count}");
-
-        var accesoriosVendidos = CalcularAccesoriosVendidos(pedidosFiltrados);
-        var ganancias = CalcularGananciasTotales(pedidosFiltrados);
-        var ventasPorCliente = CalcularVentasPorCliente(pedidosFiltrados);
-
-        reporteMensual = new Reporte
-        {
-            TotalVentas = ganancias,
-            ProductosVendidos = accesoriosVendidos,
-            VentasPorCliente = ventasPorCliente,
-            Pedidos = pedidosFiltrados
-        };
-
-        Console.WriteLine($"Reporte mensual generado. Ganancias: {ganancias:F2}, Productos vendidos: {accesoriosVendidos.Count}, Clientes: {ventasPorCliente.Count}");
-    }
-
-    private async Task GenerarReporteAnual()
-    {
-        var pedidosAnio = pedidos.Where(p => p.FechaCreacion.Year == anioSeleccionado).ToList();
-        var pedidosEntregadosAnio = pedidosAnio.Where(p => p.Estado == EstadoPedido.Entregado).ToList();
-
-        reporteAnual = new Reporte
-        {
-            TotalVentas = CalcularGananciasTotales(pedidosEntregadosAnio),
-            ProductosVendidos = CalcularAccesoriosVendidos(pedidosEntregadosAnio),
-            VentasPorCliente = CalcularVentasPorCliente(pedidosEntregadosAnio),
-            Pedidos = pedidosEntregadosAnio
-        };
-    }
-
-    private Dictionary<string, int> CalcularAccesoriosVendidos(List<PedidosComprasDto> pedidosLista)
-    {
-        var accesoriosVendidos = new Dictionary<string, int>();
-
-        foreach (var pedido in pedidosLista)
-        {
-            // ✅ VALIDACIÓN: Verificar que Items no sea null
-            if (pedido.Items == null) continue;
-
-            foreach (var item in pedido.Items)
-            {
-                if (item.Accesorio != null && item.Accesorio.Nombre != "Bicicleta") // Excluimos la bicicleta base
-                {
-                    string accesorioKey = $"{item.Accesorio.Nombre} - {item.Accesorio.Descripcion}";
-
-                    if (accesoriosVendidos.ContainsKey(accesorioKey))
-                    {
-                        accesoriosVendidos[accesorioKey] += item.Cantidad;
-                    }
-                    else
-                    {
-                        accesoriosVendidos[accesorioKey] = item.Cantidad;
-                    }
-
-                    Console.WriteLine($"Accesorio contado: {accesorioKey}, Cantidad: {item.Cantidad}");
-                }
-            }
-        }
-
-        var resultado = accesoriosVendidos.OrderByDescending(x => x.Value)
-                                          .Take(10)
-                                          .ToDictionary(x => x.Key, x => x.Value);
-
-        Console.WriteLine($"Accesorios más vendidos: {string.Join(", ", resultado.Select(kv => $"{kv.Key}: {kv.Value}"))}");
-
-        return resultado;
-    }
-
-    private Dictionary<int, double> CalcularVentasPorCliente(List<PedidosComprasDto> pedidosLista)
-    {
-        var ventasPorCliente = new Dictionary<int, double>();
-
-        foreach (var pedido in pedidosLista)
-        {
-            if (ventasPorCliente.ContainsKey(pedido.UsuarioId))
-            {
-                ventasPorCliente[pedido.UsuarioId] += pedido.PrecioTotal;
-            }
-            else
-            {
-                ventasPorCliente[pedido.UsuarioId] = pedido.PrecioTotal;
-            }
-        }
-
-        return ventasPorCliente.OrderByDescending(x => x.Value)
-                               .ToDictionary(x => x.Key, x => x.Value);
-    }
-
-    private async Task ExportarPDF(Reporte reporte, string tipo)
-    {
-        try
-        {
-            using (MemoryStream ms = new MemoryStream())
-            {
-                Document document = new Document(PageSize.A4, 25, 25, 30, 30);
-                PdfWriter writer = PdfWriter.GetInstance(document, ms);
-                document.Open();
-
-                // Agregar título
-                Font titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 18);
-                Paragraph title = new Paragraph($"Reporte de Ventas {tipo.ToUpper()}", titleFont);
-                title.Alignment = Element.ALIGN_CENTER;
-                document.Add(title);
-                document.Add(Chunk.NEWLINE);
-
-                // Agregar información general
-                document.Add(new Paragraph($"Total de Ganancias: Bs. {reporte.TotalVentas:F2}"));
-                document.Add(new Paragraph($"Período: {(tipo == "mensual" ? $"{fechaInicio:d} - {fechaFin:d}" : anioSeleccionado.ToString())}"));
-                document.Add(Chunk.NEWLINE);
-
-                // Agregar subtítulo de productos más vendidos
-                Font subtitleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 14);
-                Paragraph productosSubtitle = new Paragraph("Productos Más Vendidos:", subtitleFont);
-                document.Add(productosSubtitle);
-                document.Add(Chunk.NEWLINE);
-
-                // Agregar tabla de productos más vendidos
-                PdfPTable productTable = new PdfPTable(2);
-                productTable.WidthPercentage = 100;
-                productTable.SetWidths(new float[] { 3f, 1f });
-                productTable.AddCell(new PdfPCell(new Phrase("Producto (Nombre - Descripción)")) { BackgroundColor = BaseColor.LIGHT_GRAY });
-                productTable.AddCell(new PdfPCell(new Phrase("Cantidad")) { BackgroundColor = BaseColor.LIGHT_GRAY });
-
-                foreach (var producto in reporte.ProductosVendidos.Take(5))
-                {
-                    productTable.AddCell(producto.Key);
-                    productTable.AddCell(producto.Value.ToString());
-                }
-
-                document.Add(productTable);
-                document.Add(Chunk.NEWLINE);
-                document.Add(Chunk.NEWLINE);
-
-                // Agregar subtítulo de top clientes
-                Paragraph clientesSubtitle = new Paragraph("Top 5 Clientes:", subtitleFont);
-                document.Add(clientesSubtitle);
-                document.Add(Chunk.NEWLINE);
-
-                // Agregar tabla de top clientes
-                PdfPTable clientTable = new PdfPTable(2);
-                clientTable.WidthPercentage = 100;
-                clientTable.SetWidths(new float[] { 1f, 2f });
-                clientTable.AddCell(new PdfPCell(new Phrase("Cliente ID")) { BackgroundColor = BaseColor.LIGHT_GRAY });
-                clientTable.AddCell(new PdfPCell(new Phrase("Total Ventas")) { BackgroundColor = BaseColor.LIGHT_GRAY });
-
-                foreach (var cliente in reporte.VentasPorCliente.Take(5))
-                {
-                    clientTable.AddCell(cliente.Key.ToString());
-                    clientTable.AddCell($"Bs. {cliente.Value:F2}");
-                }
-
-                document.Add(clientTable);
-                document.Close();
-
-                byte[] pdfBytes = ms.ToArray();
-                await JSRuntime.InvokeVoidAsync("saveAsFile", $"reporte_ventas_{tipo}.pdf", Convert.ToBase64String(pdfBytes));
-            }
-        }
-        catch (Exception ex)
-        {
-            await JSRuntime.InvokeVoidAsync("alert", $"Error al exportar a PDF: {ex.Message}");
-        }
-    }
-
-    private async Task ExportarExcel(Reporte reporte, string tipo)
-    {
-        try
-        {
-            using (var package = new ExcelPackage())
-            {
-                var worksheet = package.Workbook.Worksheets.Add($"Reporte {tipo}");
-
-                // Título
-                worksheet.Cells["A1"].Value = $"Reporte de Ganancias {tipo.ToUpper()}";
-                worksheet.Cells["A1:D1"].Merge = true;
-                worksheet.Cells["A1"].Style.Font.Size = 14;
-                worksheet.Cells["A1"].Style.Font.Bold = true;
-                worksheet.Cells["A1"].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                // Información general
-                worksheet.Cells["A3"].Value = "Ganancias Totales:";
-                worksheet.Cells["B3"].Value = reporte.TotalVentas;
-                worksheet.Cells["B3"].Style.Numberformat.Format = "#,##0.00";
-                worksheet.Cells["A4"].Value = "Período:";
-                worksheet.Cells["B4"].Value = tipo == "mensual" ? $"{fechaInicio:d} - {fechaFin:d}" : anioSeleccionado.ToString();
-
-                // Productos más vendidos
-                worksheet.Cells["A6"].Value = "Productos Más Vendidos";
-                worksheet.Cells["A6:B6"].Merge = true;
-                worksheet.Cells["A6"].Style.Font.Bold = true;
-                worksheet.Cells["A7"].Value = "Producto";
-                worksheet.Cells["B7"].Value = "Cantidad";
-
-                int row = 8;
-                foreach (var producto in reporte.ProductosVendidos)
-                {
-                    worksheet.Cells[$"A{row}"].Value = producto.Key;
-                    worksheet.Cells[$"B{row}"].Value = producto.Value;
-                    row++;
-                }
-
-                // Top clientes
-                row += 2;
-                worksheet.Cells[$"A{row}"].Value = "Top Clientes";
-                worksheet.Cells[$"A{row}:B{row}"].Merge = true;
-                worksheet.Cells[$"A{row}"].Style.Font.Bold = true;
-                row++;
-                worksheet.Cells[$"A{row}"].Value = "Cliente ID";
-                worksheet.Cells[$"B{row}"].Value = "Total Ventas";
-                row++;
-
-                foreach (var cliente in reporte.VentasPorCliente)
-                {
-                    worksheet.Cells[$"A{row}"].Value = cliente.Key;
-                    worksheet.Cells[$"B{row}"].Value = cliente.Value;
-                    worksheet.Cells[$"B{row}"].Style.Numberformat.Format = "#,##0.00";
-                    row++;
-                }
-
-                worksheet.Cells.AutoFitColumns();
-
-                var excelBytes = package.GetAsByteArray();
-                var fileName = $"reporte_ganancias_{tipo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-                await JSRuntime.InvokeVoidAsync("saveAsFile", fileName, Convert.ToBase64String(excelBytes));
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error detallado al exportar a Excel: {ex}");
-            await JSRuntime.InvokeVoidAsync("alert", $"Error al exportar a Excel: {ex.Message}. Por favor, contacte al soporte técnico.");
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await CargarDatos();
-            await JSRuntime.InvokeVoidAsync("crearGraficoPedidos", pedidosPendientes, pedidosEnProceso, pedidosEnviados, pedidosEntregados, pedidosCancelados);
-        }
-    }
+    void CerrarModal() => pedidoSeleccionado = null;
 }

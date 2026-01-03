@@ -1,0 +1,35 @@
+﻿<div class="dashboard-filters">
+
+    <div>
+        <label>Periodo</label>
+        <select @onchange="e => PeriodoChanged.InvokeAsync(e.Value.ToString())">
+            <option value="mensual">Mensual</option>
+            <option value="anual">Anual</option>
+            <option value="total">Total</option>
+        </select>
+    </div>
+
+    <div>
+        <label>Mes</label>
+        <input type="number" value="@Mes"
+               @onchange="e => MesChanged.InvokeAsync(int.Parse(e.Value.ToString()))" />
+    </div>
+
+    <div>
+        <label>Año</label>
+        <input type="number" value="@Anio"
+               @onchange="e => AnioChanged.InvokeAsync(int.Parse(e.Value.ToString()))" />
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public string Periodo { get; set; }
+    [Parameter] public EventCallback<string> PeriodoChanged { get; set; }
+
+    [Parameter] public int Mes { get; set; }
+    [Parameter] public EventCallback<int> MesChanged { get; set; }
+
+    [Parameter] public int Anio { get; set; }
+    [Parameter] public EventCallback<int> AnioChanged { get; set; }
+}

@@ -1,0 +1,24 @@
+﻿<div class="kpi-grid">
+
+    <div class="kpi-card blue">
+        <span>Total Pedidos</span>
+        <strong>@TotalPedidos</strong>
+    </div>
+
+    <div class="kpi-card green">
+        <span>Ganancias</span>
+        <strong>Bs @Ganancias.ToString("N2")</strong>
+    </div>
+
+    <div class="kpi-card orange">
+        <span>Usuarios</span>
+        <strong>@TotalUsuarios</strong>
+    </div>
+
+</div>
+
+@code {
+    [Parameter] public int TotalPedidos { get; set; }
+    [Parameter] public int TotalUsuarios { get; set; }
+    [Parameter] public double Ganancias { get; set; }
+}

@@ -1,0 +1,37 @@
+﻿@using PersonalizacionProyectoGradoWASM.Modelos
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Usuario</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Pedidos)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.UsuarioId</td>
+                <td>@p.FechaCreacion.ToShortDateString()</td>
+                <td>Bs @p.PrecioTotal</td>
+                <td>@p.Estado</td>
+                <td>
+                    <button class="btn btn-sm btn-primary"
+                            @onclick="() => OnVerDetalle.InvokeAsync(p.Id)">
+                        Detalles
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public List<PedidosComprasDto> Pedidos { get; set; }
+    [Parameter] public EventCallback<int> OnVerDetalle { get; set; }
+}
