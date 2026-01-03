@@ -375,7 +375,7 @@ window.actualizarModeloBicicleta = function (accesorios) {
                                         accesorioMesh.position = new BABYLON.Vector3(0, 0, 0);
                                         break;
                                     case "Caucho amarillo":
-                                        accesorioMesh.position = new BABYLON.Vector3(0, 1, 1.1);
+                                        accesorioMesh.position = new BABYLON.Vector3(0, -13.5, 0);
                                         break;
                                     case "Caucho Naranja":
                                         accesorioMesh.position = new BABYLON.Vector3(0, -15.8, 0);
@@ -394,7 +394,7 @@ window.actualizarModeloBicicleta = function (accesorios) {
                                 }
                                 accesorioMesh.rotation = new BABYLON.Vector3(0, 0, 0);
                                 break;
-                            case "Asiento para Niño ":
+                            case "Asiento para Niño":
                                 switch (accesorio.descripcion) {
                                     case "Azul":
                                         accesorioMesh.position = new BABYLON.Vector3(0, -30, 0);
